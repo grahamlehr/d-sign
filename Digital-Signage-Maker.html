@@ -1,392 +1,520 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="daylight">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digital Signage Graphic Generator</title>
+  <title>CueSmith · Digital Signage Graphic Generator</title>
   
-  <!-- Load Inter and Outfit fonts for the App UI -->
+  <!-- Modernist Typography: Archivo from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;600;700&family=Montserrat:wght@400;700;800&family=Playfair+Display:wght@600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   
   <style>
-    /* Reset & Base Styles */
+    /* ==========================================================================
+       CueSmith Modernist Design Language Tokens
+       Derived from modernist-bed50b9e-5ffe-4902-ba30-c76a0fbf2b94
+       Flat, architectural, set in Archivo, near-mono red on ground,
+       strict 0px border radius, 2px dividing rules, tabular metrics.
+       ========================================================================== */
+    
+    :root {
+      /* Daylight (Default) */
+      --color-bg: #f3f2f2;
+      --color-surface: #eae9e9;
+      --color-surface-card: #f8f7f7;
+      --color-surface-hover: #dfdede;
+      --color-text: #201e1d;
+      --color-accent: #ec3013;
+      --color-accent-2: #e15b47;
+      --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+      --color-divider-subtle: color-mix(in srgb, #201e1d 15%, transparent);
+
+      /* Tonal Ramps (OKLCH lightness matched) */
+      --color-neutral-100: #f8f4f4;
+      --color-neutral-200: #eae7e7;
+      --color-neutral-300: #d7d3d3;
+      --color-neutral-400: #bab6b6;
+      --color-neutral-500: #9b9797;
+      --color-neutral-600: #7d7979;
+      --color-neutral-700: #605d5d;
+      --color-neutral-800: #444141;
+      --color-neutral-900: #2d2b2b;
+
+      --color-accent-100: #fff2ef;
+      --color-accent-200: #ffe0d9;
+      --color-accent-300: #ffc4b8;
+      --color-accent-400: #ff9783;
+      --color-accent-500: #ff563c;
+      --color-accent-600: #dd2b0f;
+      --color-accent-700: #ae1800;
+      --color-accent-800: #7c1405;
+      --color-accent-900: #4d170e;
+
+      /* Strict Zero Radius */
+      --radius-sm: 0px;
+      --radius-md: 0px;
+      --radius-lg: 0px;
+
+      /* Spacing Scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+
+      /* Fonts */
+      --font-heading: "Archivo", system-ui, sans-serif;
+      --font-heading-weight: 800;
+      --font-body: "Archivo", system-ui, sans-serif;
+
+      /* Elevation */
+      --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+      --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+      --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+
+      /* Workspace Specifics */
+      --checker-1: rgba(32, 30, 29, 0.05);
+      --checker-2: rgba(32, 30, 29, 0.12);
+      --viewport-bg: #e3e2e1;
+    }
+
+    /* Backstage Dark Theme Mode */
+    [data-theme="backstage"] {
+      --color-bg: #161514;
+      --color-surface: #22201e;
+      --color-surface-card: #282624;
+      --color-surface-hover: #2e2b29;
+      --color-text: #f3f2f2;
+      --color-accent: #ec3013;
+      --color-accent-2: #e15b47;
+      --color-divider: color-mix(in srgb, #f3f2f2 35%, transparent);
+      --color-divider-subtle: color-mix(in srgb, #f3f2f2 15%, transparent);
+
+      --color-neutral-100: #22201e;
+      --color-neutral-200: #2d2a28;
+      --color-neutral-300: #444141;
+      --color-neutral-400: #605d5d;
+      --color-neutral-500: #7d7979;
+      --color-neutral-600: #bab6b6;
+      --color-neutral-700: #d7d3d3;
+      --color-neutral-800: #eae7e7;
+      --color-neutral-900: #f8f4f4;
+
+      --color-accent-100: #3a1a12;
+      --color-accent-200: #591b10;
+      --color-accent-300: #7c1405;
+      --color-accent-400: #ae1800;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.6);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.8);
+
+      --checker-1: #1f1d1b;
+      --checker-2: #2b2826;
+      --viewport-bg: #0f0e0d;
+    }
+
+    /* Reset & Base */
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-    }
-
-    :root {
-      /* Theme Colors: Sleek Space Dark Theme */
-      --bg-space: hsl(222, 47%, 7%);
-      --bg-panel: hsla(222, 47%, 12%, 0.7);
-      --bg-panel-solid: hsl(222, 47%, 12%);
-      --bg-input: hsla(222, 47%, 16%, 0.8);
-      --border-light: rgba(255, 255, 255, 0.08);
-      --border-focus: hsl(180, 100%, 40%);
-      
-      --accent-teal: hsl(180, 100%, 40%);
-      --accent-teal-hover: hsl(180, 100%, 35%);
-      --accent-indigo: hsl(239, 84%, 67%);
-      --accent-indigo-glow: hsla(239, 84%, 67%, 0.4);
-      --accent-teal-glow: hsla(180, 100%, 40%, 0.3);
-      
-      --text-main: hsl(0, 0%, 95%);
-      --text-muted: hsl(215, 20%, 65%);
-      --text-dim: hsl(215, 12%, 45%);
-      
-      --shadow-premium: 0 12px 40px -10px rgba(0, 0, 0, 0.5);
-      --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-      
-      --radius-lg: 16px;
-      --radius-md: 10px;
-      --radius-sm: 6px;
-      
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: var(--text-main);
-      background-color: var(--bg-space);
-    }
-
-    html, body {
-      height: 100vh;
-      overflow: hidden;
+      border-radius: 0 !important; /* Strict Modernist 0px radius enforcement */
     }
 
     body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
+      user-select: none;
     }
 
-    /* Scrollbar Styling */
+    /* Tabular Numbers */
+    .tn {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* Photography Grayscale Filter */
+    .grayscale {
+      filter: grayscale(1) contrast(1.08) !important;
+    }
+
+    /* Dividers */
+    .hr {
+      height: 2px;
+      border: 0;
+      background: var(--color-divider);
+      margin: var(--space-4) 0;
+    }
+
+    .hr-subtle {
+      height: 1px;
+      border: 0;
+      background: var(--color-divider-subtle);
+      margin: var(--space-3) 0;
+    }
+
+    /* Focus States */
+    :focus { outline: none; }
+    :focus-visible {
+      outline: 2px solid var(--color-accent) !important;
+      outline-offset: 2px !important;
+    }
+    ::selection {
+      background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+      color: inherit;
+    }
+
+    /* Scrollbars */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: var(--bg-space);
+      background: var(--color-bg);
+      border-left: 1px solid var(--color-divider-subtle);
     }
     ::-webkit-scrollbar-thumb {
-      background: var(--bg-panel-solid);
-      border: 2px solid var(--bg-space);
-      border-radius: var(--radius-sm);
+      background: var(--color-neutral-400);
+      border: 1px solid var(--color-bg);
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: var(--text-dim);
+      background: var(--color-accent);
     }
 
-    /* Layout & Header */
-    header {
-      background-color: hsla(222, 47%, 5%, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-light);
-      padding: 1rem 2rem;
+    /* ==========================================================================
+       Header Navigation Bar
+       ========================================================================== */
+    .nav {
+      height: 56px;
+      background: var(--color-bg);
+      border-bottom: 2px solid var(--color-divider);
+      padding: 0 var(--space-4);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
+      gap: var(--space-4);
       z-index: 100;
+      flex-shrink: 0;
     }
 
-    .brand-container {
+    .nav-brand-group {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
-    .brand-logo {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--accent-teal), var(--accent-indigo));
-      border-radius: var(--radius-md);
+    .nav-logo-badge {
+      background: var(--color-accent);
+      color: #fff;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      padding: 4px 8px;
+      text-transform: uppercase;
+    }
+
+    .nav-brand-title {
+      font-family: var(--font-heading);
+      font-weight: var(--font-heading-weight);
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      color: var(--bg-space);
-      font-family: 'Outfit', sans-serif;
-      box-shadow: 0 0 15px var(--accent-teal-glow);
+      gap: 8px;
     }
 
-    .brand-logo svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: var(--bg-space);
-      stroke-width: 2.5;
+    .nav-version-tag {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent-700);
+      border: 1px solid var(--color-divider);
+      padding: 1px 6px;
     }
 
-    .brand-text h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    /* Modernist Buttons (Labels Flush Left by System Specification) */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: left;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: var(--font-heading);
       font-weight: 700;
-      letter-spacing: -0.5px;
-      background: linear-gradient(to right, #fff, var(--text-muted));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 13px;
+      line-height: 1.2;
+      color: var(--color-text);
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 8px 14px;
+      white-space: nowrap;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
-    .brand-text p {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    .btn svg {
+      flex-shrink: 0;
+      display: block;
     }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed !important;
+    }
+
+    .btn-primary {
+      background: var(--color-accent);
+      color: #ffffff;
+      border-color: var(--color-accent);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--color-accent-600);
+      border-color: var(--color-accent-600);
+    }
+    .btn-primary:active:not(:disabled) {
+      background: var(--color-accent-700);
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-light);
-      color: var(--text-main);
-      padding: 0.75rem 1.25rem;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: flex;
+      background: var(--color-surface);
+      border-color: var(--color-divider);
+      color: var(--color-text);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--color-surface-hover);
+      border-color: var(--color-text);
+    }
+    .btn-secondary:active:not(:disabled) {
+      background: color-mix(in srgb, var(--color-text) 14%, transparent);
+    }
+
+    .btn-ghost {
+      color: var(--color-text);
+      padding: 6px 10px;
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--color-text) 8%, transparent);
+      color: var(--color-accent);
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* Tags */
+    .tag {
+      display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: var(--text-muted);
-    }
-
-    .export-btn {
-      background: linear-gradient(135deg, var(--accent-teal), var(--accent-indigo));
-      color: var(--bg-space);
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: var(--radius-md);
+      gap: 4px;
+      font-size: 11px;
       font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+    }
+    .tag-accent {
+      background: var(--color-accent-100);
+      color: var(--color-accent-800);
+      border: 1px solid var(--color-accent-300);
+    }
+    .tag-live {
+      background: var(--color-accent);
+      color: #fff;
+    }
+    .tag-neutral {
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 1px solid var(--color-divider-subtle);
     }
 
-    .export-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4), 0 0 10px rgba(99, 102, 241, 0.4);
-      filter: brightness(1.1);
-    }
-
-    .export-btn:active {
-      transform: translateY(0);
-    }
-
+    /* ==========================================================================
+       Main Workspace Layout
+       ========================================================================== */
     .main-workspace {
       flex: 1;
       min-height: 0;
       display: grid;
-      grid-template-columns: 390px 1fr;
+      grid-template-columns: 420px 1fr;
     }
 
-    /* Sidebar controls */
+    /* Sidebar Panel */
     .sidebar {
-      background-color: var(--bg-panel-solid);
-      border-right: 1px solid var(--border-light);
+      background: var(--color-bg);
+      border-right: 2px solid var(--color-divider);
       overflow-y: auto;
-      padding: 1.5rem;
+      padding: var(--space-4);
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: var(--space-4);
+    }
+
+    /* Modernist Architectural Control Card */
+    .control-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-divider);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--color-divider);
+      padding-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .section-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
+      font-family: var(--font-heading);
+      font-weight: var(--font-heading-weight);
+      font-size: 13px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--accent-teal);
-      margin-bottom: 1rem;
+      color: var(--color-text);
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 8px;
     }
 
-    .section-title svg {
-      width: 14px;
-      height: 14px;
-      stroke: var(--accent-teal);
-      stroke-width: 2.5;
-      fill: none;
+    .section-num {
+      color: var(--color-accent);
+      font-weight: 800;
     }
 
-    .control-card {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem;
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow-premium);
-      transition: border-color 0.3s ease;
+    /* Segmented Controls */
+    .seg {
+      display: flex;
+      border: 1px solid var(--color-divider);
+      background: var(--color-surface-card);
+      overflow: hidden;
+      width: 100%;
     }
 
-    .control-card:focus-within {
-      border-color: rgba(6, 182, 212, 0.3);
+    .seg-opt {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 6px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      background: transparent;
+      border: none;
+      color: var(--color-text);
+      transition: background 0.15s ease, color 0.15s ease;
     }
 
-    .control-group {
-      margin-bottom: 1.25rem;
+    .seg-opt + .seg-opt {
+      border-left: 1px solid var(--color-divider);
     }
 
-    .control-group:last-child {
-      margin-bottom: 0;
+    .seg-opt:hover:not(.active) {
+      background: var(--color-surface-hover);
     }
 
-    label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
+    .seg-opt.active {
+      background: var(--color-accent);
+      color: #ffffff;
     }
 
-    .label-with-value {
+    /* Field Form Controls */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--color-text) 75%, transparent);
     }
 
-    .label-val {
-      font-size: 0.75rem;
-      font-family: monospace;
-      color: var(--accent-teal);
-      background: var(--bg-input);
+    .label-badge {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--color-surface-card);
+      border: 1px solid var(--color-divider-subtle);
       padding: 1px 6px;
-      border-radius: var(--radius-sm);
+      color: var(--color-text);
     }
 
-    /* Tabs Layout */
-    .tabs-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 4px;
-      background-color: var(--bg-input);
-      border-radius: var(--radius-md);
-      padding: 4px;
-      margin-bottom: 1rem;
-      border: 1px solid var(--border-light);
-    }
-
-    .tab-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 0.5rem 0.1rem;
-      border-radius: calc(var(--radius-md) - 2px);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .tab-btn:hover {
-      color: var(--text-main);
-    }
-
-    .tab-btn.active {
-      background-color: var(--bg-panel-solid);
-      color: var(--accent-teal);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-light);
-    }
-
-    .custom-size-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Inputs */
-    input[type="text"],
-    input[type="number"],
-    textarea,
-    select {
+    .input {
       width: 100%;
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-      color: var(--text-main);
-      padding: 0.6rem 0.8rem;
-      font-size: 0.85rem;
+      min-height: 36px;
+      padding: 8px 10px;
       font-family: inherit;
-      transition: all 0.3s ease;
-      box-shadow: var(--shadow-inset);
+      font-size: 13px;
+      color: var(--color-text);
+      background: var(--color-surface-card);
+      border: 1px solid var(--color-divider);
+      transition: border-color 0.15s ease;
     }
 
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    textarea:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent-teal);
-      box-shadow: 0 0 0 3px var(--accent-teal-glow), var(--shadow-inset);
+    .input:hover {
+      border-color: var(--color-text);
     }
 
-    textarea {
+    .input:focus-visible {
+      border-color: var(--color-accent);
+    }
+
+    textarea.input {
+      min-height: 76px;
       resize: vertical;
-      min-height: 70px;
+      line-height: 1.4;
     }
 
-    .color-picker-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    input[type="color"] {
-      -webkit-appearance: none;
-      border: none;
-      width: 38px;
-      height: 38px;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      background: none;
-      padding: 0;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-    }
-
-    input[type="color"]::-webkit-color-swatch-wrapper {
-      padding: 0;
-    }
-
-    input[type="color"]::-webkit-color-swatch {
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-    }
-
+    /* Custom Range Sliders */
     input[type="range"] {
       -webkit-appearance: none;
+      appearance: none;
       width: 100%;
-      height: 6px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-input);
+      height: 4px;
+      background: var(--color-divider);
       outline: none;
-      margin: 10px 0;
+      margin: 8px 0;
+      cursor: pointer;
     }
 
     input[type="range"]::-webkit-slider-thumb {
@@ -394,105 +522,123 @@
       appearance: none;
       width: 16px;
       height: 16px;
-      border-radius: 50%;
-      background: var(--accent-teal);
-      cursor: pointer;
-      box-shadow: 0 0 8px var(--accent-teal-glow);
-      transition: transform 0.1s ease, background-color 0.2s ease;
+      background: var(--color-accent);
+      border: 1px solid var(--color-bg);
+      cursor: ew-resize;
+      transition: transform 0.1s ease, background 0.15s ease;
     }
 
     input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.2);
-      background: #fff;
+      background: var(--color-accent-600);
     }
 
-    .btn-toggle-group {
+    /* Color Inputs */
+    .color-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(1px, 1fr));
-      background-color: var(--bg-input);
-      border-radius: var(--radius-md);
-      padding: 3px;
-      border: 1px solid var(--border-light);
+      grid-template-columns: 44px 1fr;
+      gap: var(--space-2);
+      align-items: center;
     }
 
-    .btn-toggle {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      padding: 0.5rem;
-      border-radius: calc(var(--radius-md) - 2px);
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: 1px solid var(--color-divider);
+      width: 44px;
+      height: 36px;
       cursor: pointer;
-      font-size: 0.8rem;
-      font-weight: 600;
+      background: transparent;
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: none;
+    }
+
+    /* Native Checkbox & Toggles with Modernist Styling */
+    .toggle-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 4px 0;
     }
 
-    .btn-toggle:hover {
-      color: var(--text-main);
+    .toggle-info {
+      display: flex;
+      flex-direction: column;
     }
 
-    .btn-toggle.active {
-      background-color: var(--bg-panel-solid);
-      color: var(--accent-teal);
-      border: 1px solid var(--border-light);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    .toggle-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    /* Drag and Drop Zone */
+    .toggle-desc {
+      font-size: 11px;
+      color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    }
+
+    /* Modernist architectural checkbox */
+    .checkbox-modern {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--color-divider);
+      background: var(--color-surface-card);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      display: grid;
+      place-content: center;
+    }
+
+    .checkbox-modern:checked {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    .checkbox-modern:checked::after {
+      content: "";
+      width: 6px;
+      height: 10px;
+      border: solid #ffffff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      margin-bottom: 2px;
+    }
+
+    /* Upload Zone */
     .upload-zone {
-      border: 2px dashed var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem 1rem;
+      border: 2px dashed var(--color-divider);
+      background: var(--color-surface-card);
+      padding: var(--space-4) var(--space-3);
       text-align: center;
       cursor: pointer;
-      background-color: rgba(255, 255, 255, 0.01);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.2s ease, background 0.2s ease;
     }
 
     .upload-zone:hover {
-      border-color: var(--accent-teal);
-      background-color: rgba(6, 182, 212, 0.03);
+      border-color: var(--color-accent);
+      background: var(--color-accent-100);
     }
 
-    .upload-zone.dragging {
-      border-color: var(--accent-indigo);
-      background-color: rgba(99, 102, 241, 0.05);
-      transform: scale(0.98);
-    }
-
-    .upload-zone svg {
-      width: 32px;
-      height: 32px;
-      stroke: var(--text-muted);
-      stroke-width: 1.5;
-      fill: none;
-      margin-bottom: 0.75rem;
-      transition: stroke 0.3s ease, transform 0.3s ease;
-    }
-
-    .upload-zone:hover svg {
-      stroke: var(--accent-teal);
-      transform: translateY(-3px);
-    }
-
-    .upload-zone p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-      pointer-events: none;
-    }
-
-    .upload-zone span {
-      display: block;
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      margin-top: 0.25rem;
-      pointer-events: none;
+    .upload-zone.drag-active {
+      border-color: var(--color-accent);
+      background: var(--color-accent-200);
+      border-style: solid;
     }
 
     .upload-zone input[type="file"] {
@@ -502,233 +648,259 @@
       cursor: pointer;
     }
 
-    .image-meta-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 0.75rem;
-      padding: 0.5rem 0.75rem;
-      background: var(--bg-input);
-      border-radius: var(--radius-md);
-      font-size: 0.75rem;
-      border: 1px solid var(--border-light);
-    }
-
-    .image-name {
-      color: var(--text-main);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 180px;
-    }
-
-    .remove-image-btn {
-      background: none;
-      border: none;
-      color: #ef4444;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.75rem;
-    }
-
-    .remove-image-btn:hover {
-      text-decoration: underline;
-    }
-
-    .upload-file-btn {
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-light);
-      color: var(--text-main);
-      padding: 0.5rem 0.75rem;
-      border-radius: var(--radius-md);
-      font-size: 0.75rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      justify-content: center;
-      transition: all 0.2s ease;
-      width: 100%;
-    }
-
-    .upload-file-btn:hover {
-      border-color: var(--accent-teal);
-      background-color: hsla(222, 47%, 20%, 0.5);
-    }
-
-    .reset-btn {
-      background-color: hsla(0, 0%, 100%, 0.05);
-      color: var(--text-main);
-      border: 1px solid var(--border-light);
-      padding: 0.6rem;
-      border-radius: var(--radius-md);
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .reset-btn:hover {
-      background-color: hsla(0, 0%, 100%, 0.1);
-      border-color: var(--text-muted);
-    }
-
-    /* Multiple Text Layers UI */
-    .btn-primary-action {
-      background: linear-gradient(135deg, var(--accent-teal), var(--accent-indigo));
-      color: var(--bg-space);
-      border: none;
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: var(--radius-md);
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15);
-      margin-bottom: 0.75rem;
-    }
-
-    .btn-primary-action:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-    }
-
-    .layers-list-container {
+    /* Layer Items List with Drag-and-Drop Reordering */
+    .layers-container {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      max-height: 180px;
+      gap: 4px;
+      max-height: 220px;
       overflow-y: auto;
-      padding-right: 2px;
-      margin-bottom: 0.5rem;
+      border: 1px solid var(--color-divider-subtle);
+      background: var(--color-surface-card);
+      padding: 4px;
     }
 
-    .layer-item {
+    .layer-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-light);
-      padding: 0.5rem 0.75rem;
-      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-divider-subtle);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      position: relative;
     }
 
-    .layer-item:hover {
-      border-color: rgba(255, 255, 255, 0.2);
-      background-color: hsla(222, 47%, 20%, 0.3);
+    .layer-card:hover {
+      border-color: var(--color-divider);
+      background: var(--color-surface-hover);
     }
 
-    .layer-item.active {
-      border-color: var(--accent-teal);
-      background-color: hsla(180, 100%, 40%, 0.05);
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.05);
+    .layer-card.active {
+      border-color: var(--color-accent);
+      border-left: 4px solid var(--color-accent);
+      background: var(--color-surface);
     }
 
-    .layer-title {
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--text-main);
+    .layer-card.dragging {
+      opacity: 0.35;
+      background: var(--color-accent-100);
+    }
+
+    .layer-card.drop-target-before::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--color-accent);
+      z-index: 10;
+    }
+
+    .layer-card.drop-target-after::after {
+      content: "";
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--color-accent);
+      z-index: 10;
+    }
+
+    .layer-card-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .layer-drag-handle {
+      cursor: grab;
+      color: color-mix(in srgb, var(--color-text) 50%, transparent);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+
+    .layer-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .layer-title-text {
+      font-size: 13px;
+      font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 170px;
     }
 
-    .layer-item.active .layer-title {
-      color: var(--accent-teal);
-      font-weight: 600;
+    .layer-card.active .layer-title-text {
+      color: var(--color-accent-700);
+      font-weight: 800;
     }
 
-    .layer-actions {
+    .layer-card-actions {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 4px;
     }
 
-    .layer-action-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: 0.65rem;
-      width: 20px;
-      height: 20px;
+    .mini-btn {
+      background: transparent;
+      border: 1px solid var(--color-divider-subtle);
+      color: var(--color-text);
+      width: 24px;
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.1s ease;
+      font-size: 10px;
     }
 
-    .layer-action-btn:hover:not(:disabled) {
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.08);
+    .mini-btn:hover:not(:disabled) {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background: var(--color-surface);
     }
 
-    .layer-action-btn.delete:hover:not(:disabled) {
-      color: #ef4444;
-      background: rgba(239, 68, 68, 0.15);
+    .mini-btn.delete:hover:not(:disabled) {
+      background: var(--color-accent);
+      color: #fff;
+      border-color: var(--color-accent);
     }
 
-    .layer-action-btn:disabled {
-      opacity: 0.25;
+    .mini-btn:disabled {
+      opacity: 0.2;
       cursor: not-allowed;
     }
 
-    /* Workspace */
+    /* Collapsible Sub-panels */
+    .collapsible-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 6px 0;
+      border-top: 1px solid var(--color-divider-subtle);
+      margin-top: 6px;
+    }
+
+    .collapsible-header span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text);
+    }
+
+    .collapsible-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding-top: var(--space-2);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ==========================================================================
+       Viewport & Preview Canvas Area
+       ========================================================================== */
     .preview-pane {
-      background-color: #080b11;
+      background: var(--viewport-bg);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 3rem;
+      padding: var(--space-8);
       position: relative;
       overflow: hidden;
-      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 0), radial-gradient(rgba(255,255,255,0.03) 1px, transparent 0);
-      background-size: 24px 24px;
-      background-position: 0 0, 12px 12px;
+      user-select: none;
     }
 
-    .preview-frame {
-      background-color: #000;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--border-light);
-      border-radius: var(--radius-sm);
-      position: relative;
-      overflow: hidden;
+    /* Workspace Quick Actions Toolbar (Floating at Top of Viewport) */
+    .canvas-quick-toolbar {
+      position: absolute;
+      top: var(--space-4);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-surface);
+      border: 2px solid var(--color-divider);
+      box-shadow: var(--shadow-md);
       display: flex;
       align-items: center;
-      justify-content: center;
-      --checker-color-1: #0f172a;
-      --checker-color-2: #1e293b;
+      gap: 1px;
+      z-index: 50;
+      padding: 2px;
+    }
+
+    .toolbar-tool-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-text);
+      padding: 6px 12px;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toolbar-tool-btn:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-accent);
+    }
+
+    .toolbar-tool-btn.active {
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    .toolbar-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--color-divider);
+      margin: 0 4px;
+    }
+
+    /* The Scaled Preview Frame */
+    .preview-frame {
+      position: relative;
+      box-shadow: var(--shadow-lg), 0 0 0 2px var(--color-divider);
+      background-color: #0b0f19;
+      transform-origin: center center;
+      transition: transform 0.1s ease-out;
+      overflow: hidden;
+    }
+
+    /* Checkerboard Grid Pattern */
+    .checkerboard {
       background-image: 
-        linear-gradient(45deg, var(--checker-color-1) 25%, transparent 25%), 
-        linear-gradient(-45deg, var(--checker-color-1) 25%, transparent 25%), 
-        linear-gradient(45deg, transparent 75%, var(--checker-color-1) 75%), 
-        linear-gradient(-45deg, transparent 75%, var(--checker-color-1) 75%);
-      background-size: 20px 20px;
-      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        linear-gradient(45deg, var(--checker-1) 25%, transparent 25%), 
+        linear-gradient(-45deg, var(--checker-1) 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, var(--checker-1) 75%), 
+        linear-gradient(-45deg, transparent 75%, var(--checker-1) 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
     }
 
     .preview-canvas-wrapper {
       position: absolute;
       inset: 0;
       overflow: hidden;
-      pointer-events: none;
     }
 
+    /* Background image element */
     .preview-bg-image {
       position: absolute;
       left: 50%;
@@ -738,14 +910,16 @@
       object-fit: cover;
       transform: translate(-50%, -50%) translate(calc(var(--bg-offset-x) * 1%), calc(var(--bg-offset-y) * 1%)) scale(var(--bg-zoom));
       transform-origin: center center;
-      transition: opacity 0.3s ease;
       opacity: 0;
+      pointer-events: none;
+      user-select: none;
     }
 
     .preview-bg-image.loaded {
       opacity: 1;
     }
 
+    /* Tint overlay */
     .preview-tint {
       position: absolute;
       inset: 0;
@@ -754,703 +928,954 @@
       pointer-events: none;
     }
 
-    /* preview-text-container holds multiple nodes */
+    /* Snap Guides (Magnetic Center Crosshairs) */
+    .snap-guide {
+      position: absolute;
+      pointer-events: none;
+      z-index: 40;
+      display: none;
+    }
+    .snap-guide-x {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      border-left: 2px dashed var(--color-accent);
+    }
+    .snap-guide-y {
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      border-top: 2px dashed var(--color-accent);
+    }
+
+    /* Layers Container */
     .preview-text-container {
       position: absolute;
       inset: 0;
-      pointer-events: none;
+      pointer-events: all;
     }
 
+    /* Draggable On-Canvas Text Layer Box */
     .preview-text-box {
       position: absolute;
-      max-width: 80%;
+      max-width: 85%;
       box-sizing: border-box;
       white-space: pre-wrap;
       word-break: break-word;
-      pointer-events: none;
-      transition: outline 0.1s ease;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      pointer-events: auto;
     }
 
-    /* Active Layer Outlined Box visual indicator */
+    .preview-text-box:hover {
+      outline: 1px dashed var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    .preview-text-box.dragging {
+      cursor: grabbing !important;
+      opacity: 0.92;
+    }
+
+    /* Active Layer Frame (Modernist Selection Box) */
     .preview-text-box.active-layer {
-      outline: 2px dashed var(--accent-teal);
-      outline-offset: 6px;
-      border-radius: 2px;
-      /* Box shadow overlay on active text */
-      box-shadow: 0 0 15px var(--accent-teal-glow);
+      outline: 2px solid var(--color-accent) !important;
+      outline-offset: 4px;
+      box-shadow: 0 0 0 1px #fff;
     }
 
-    .workspace-toolbar {
+    /* Corner handles on active layer */
+    .preview-text-box.active-layer::after {
+      content: "";
       position: absolute;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      background-color: var(--bg-panel-solid);
-      border: 1px solid var(--border-light);
-      padding: 0.5rem 1rem;
-      border-radius: var(--radius-md);
-      font-size: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      user-select: none;
-      z-index: 10;
+      top: -8px;
+      right: -8px;
+      width: 8px;
+      height: 8px;
+      background: var(--color-accent);
+      border: 1px solid #fff;
     }
 
-    .workspace-toolbar label {
+    .preview-text-box.active-layer::before {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: -8px;
+      width: 8px;
+      height: 8px;
+      background: var(--color-accent);
+      border: 1px solid #fff;
+    }
+
+    /* On-Canvas Coordinates Badge HUD */
+    .coords-hud {
+      position: absolute;
+      top: -24px;
+      left: 0;
+      background: var(--color-text);
+      color: var(--color-bg);
+      font-family: var(--font-heading);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 1px 6px;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 45;
+      display: none;
+    }
+    .preview-text-box.active-layer .coords-hud {
+      display: block;
+    }
+
+    /* Viewport Status & Scale Bar (Bottom Right) */
+    .viewport-status-bar {
+      position: absolute;
+      bottom: var(--space-4);
+      right: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-divider);
+      box-shadow: var(--shadow-sm);
+      padding: 6px 12px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-4);
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 50;
+    }
+
+    .viewport-status-bar label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       cursor: pointer;
-      user-select: none;
-      margin-bottom: 0;
-      color: var(--text-main);
     }
 
-    .workspace-toolbar input[type="checkbox"] {
-      accent-color: var(--accent-teal);
-    }
-
-    .zoom-control-group {
+    .zoom-group {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: var(--text-muted);
+      gap: 8px;
     }
 
-    .zoom-control-group input[type="range"] {
+    .zoom-group input[type="range"] {
       width: 80px;
       margin: 0;
     }
 
-    .zoom-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-light);
-      color: var(--text-muted);
-      padding: 3px 8px;
-      border-radius: var(--radius-sm);
-      font-size: 0.7rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .zoom-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-main);
-      border-color: var(--text-muted);
-    }
-
-    .zoom-btn.active {
-      background: rgba(6, 182, 212, 0.15);
-      border-color: var(--accent-teal);
-      color: var(--accent-teal);
-      box-shadow: 0 0 8px var(--accent-teal-glow);
-    }
-
-    .switch-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      user-select: none;
-    }
-
-    .switch-label-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .switch-desc {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 22px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-light);
-      transition: .3s;
-      border-radius: 34px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background-color: var(--text-muted);
-      transition: .3s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background-color: rgba(6, 182, 212, 0.2);
-      border-color: var(--accent-teal);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(22px);
-      background-color: var(--accent-teal);
-      box-shadow: 0 0 6px var(--accent-teal-glow);
-    }
-
-    .collapsible-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .collapsible-header h3 {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .collapsible-content {
-      margin-top: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    .collapsible-content.hidden {
-      display: none;
-    }
-
-    .chevron-icon {
-      width: 16px;
-      height: 16px;
-      stroke: var(--text-muted);
-      stroke-width: 2;
-      fill: none;
-      transition: transform 0.2s ease;
-    }
-
-    .chevron-icon.rotated {
-      transform: rotate(180deg);
-    }
-
-    .divider {
-      height: 1px;
-      background-color: var(--border-light);
-      margin: 1.25rem 0;
-    }
-
-    .mobile-alert {
-      display: none;
+    /* Full Window Drag-and-Drop Ingestion Overlay */
+    .global-drag-overlay {
       position: fixed;
       inset: 0;
-      background-color: var(--bg-space);
+      background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+      backdrop-filter: blur(4px);
       z-index: 9999;
-      padding: 2rem;
-      text-align: center;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: none;
+      place-items: center;
+      border: 6px dashed var(--color-accent);
+      pointer-events: none;
     }
 
-    @media (max-width: 768px) {
-      .mobile-alert {
-        display: flex;
-      }
+    .global-drag-overlay.active {
+      display: grid;
+    }
+
+    .drag-overlay-card {
+      background: var(--color-surface);
+      border: 2px solid var(--color-text);
+      padding: 32px 48px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .drag-overlay-card h2 {
+      font-family: var(--font-heading);
+      font-size: 24px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+    }
+
+    .drag-overlay-card p {
+      font-size: 14px;
+      max-width: 40ch;
+      color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    }
+
+    /* Keyboard Shortcuts Modal / Dialog */
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, #000 60%, transparent);
+      backdrop-filter: blur(2px);
+      display: none;
+      place-items: center;
+      z-index: 10000;
+      padding: var(--space-4);
+    }
+
+    .dialog-backdrop.open {
+      display: grid;
+    }
+
+    .dialog {
+      width: min(540px, 100%);
+      background: var(--color-surface);
+      border: 2px solid var(--color-divider);
+      box-shadow: var(--shadow-lg);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--color-divider);
+      padding-bottom: 8px;
+    }
+
+    .dialog-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+    }
+
+    .shortcut-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .shortcut-table th {
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px;
+      border-bottom: 2px solid var(--color-divider);
+      color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    }
+
+    .shortcut-table td {
+      padding: 6px;
+      border-bottom: 1px solid var(--color-divider-subtle);
+    }
+
+    .kbd {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--color-surface-card);
+      border: 1px solid var(--color-divider);
+      padding: 2px 6px;
+      color: var(--color-text);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10001;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--color-text);
+      color: var(--color-bg);
+      border-left: 4px solid var(--color-accent);
+      padding: 10px 18px;
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-  <div class="mobile-alert">
-    <div class="brand-logo" style="width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: 1.5rem;">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  <!-- Global Drag-and-Drop Ingestion Overlay -->
+  <div class="global-drag-overlay" id="global-drag-overlay">
+    <div class="drag-overlay-card">
+      <div class="nav-logo-badge" style="font-size: 16px; padding: 6px 14px;">DRAG & DROP DETECTED</div>
+      <h2 id="drag-overlay-title">Drop Asset into Workspace</h2>
+      <p id="drag-overlay-subtitle">Drop JPEG/PNG to update background, JSON to load project, or TTF/OTF to register custom font.</p>
     </div>
-    <h2 style="font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">Desktop Screen Required</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 300px; line-height: 1.5;">The Signage Graphic Generator is designed for desktop monitor layouts to support multi-layer formatting controls. Please use a laptop or desktop monitor.</p>
   </div>
 
-  <header>
-    <div class="brand-container">
-      <div class="brand-logo">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <h1>Digital Signage Graphic Generator</h1>
-        <p>Design and export offline graphics for digital screens & apps</p>
+  <!-- Header Navigation Bar -->
+  <header class="nav">
+    <div class="nav-brand-group">
+      <div class="nav-logo-badge">CueSmith</div>
+      <div class="nav-brand-title">
+        Digital Signage Maker
+        <span class="nav-version-tag tn">v2.0 · Archivo</span>
       </div>
     </div>
-    <div class="header-actions">
-      <!-- hidden input for JSON import -->
+
+    <div class="nav-actions">
+      <!-- Shortcuts help button -->
+      <button class="btn btn-secondary" id="shortcuts-btn" title="Keyboard Shortcuts (?)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Hotkeys (?)
+      </button>
+
+      <!-- Theme Switcher (Daylight / Backstage Dark) -->
+      <button class="btn btn-secondary" id="theme-toggle-btn" title="Toggle Daylight/Backstage theme">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="theme-btn-label">Backstage</span>
+      </button>
+
+      <!-- JSON Project File Input (Hidden) -->
       <input type="file" id="load-project-input" accept=".json" style="display: none;">
-      <button class="btn-secondary" id="load-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M12 3v12M12 3L7 8M12 3l5 5"/>
-        </svg>
-        Load Design
+      
+      <button class="btn btn-secondary" id="load-btn" title="Open project JSON configuration">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M12 3v12M12 3L7 8M12 3l5 5"/></svg>
+        Load JSON
       </button>
-      <button class="btn-secondary" id="save-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/>
-        </svg>
-        Save Design
+      
+      <button class="btn btn-secondary" id="save-btn" title="Export project JSON configuration">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>
+        Save JSON
       </button>
-      <button class="export-btn" id="export-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-        </svg>
-        Download PNG
+      
+      <button class="btn btn-primary" id="export-btn" title="Export high-resolution raster graphic">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export PNG
       </button>
     </div>
   </header>
 
+  <!-- Main Workspace -->
   <main class="main-workspace">
-    <!-- Sidebar Panel Controls -->
-    <div class="sidebar">
+    
+    <!-- Sidebar Control Panel -->
+    <aside class="sidebar">
       
-      <!-- 1. Screen Presets -->
-      <div class="control-card">
-        <div class="section-title">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-          1. Screen Format Dimensions
-        </div>
-        
-        <div class="tabs-container" id="preset-tabs">
-          <button class="tab-btn active" data-preset="landscape">HD Land</button>
-          <button class="tab-btn" data-preset="portrait">HD Port</button>
-          <button class="tab-btn" data-preset="landscape4k">4K Land</button>
-          <button class="tab-btn" data-preset="portrait4k">4K Port</button>
-          <button class="tab-btn" data-preset="custom" style="grid-column: span 2;">Custom</button>
+      <!-- 01. Screen Format & Dimensions -->
+      <section class="control-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-num tn">01</span> Screen Format
+          </div>
+          <span class="tag tag-accent tn" id="current-res-badge">1920 × 1080</span>
         </div>
 
-        <div class="custom-size-grid hidden" id="custom-size-controls">
-          <div>
-            <label for="custom-w">Width (px)</label>
-            <input type="number" id="custom-w" value="1920" min="100" max="8000">
-          </div>
-          <div>
-            <label for="custom-h">Height (px)</label>
-            <input type="number" id="custom-h" value="1080" min="100" max="8000">
-          </div>
+        <div class="seg" id="preset-tabs">
+          <button class="seg-opt active" data-preset="landscape">HD Land</button>
+          <button class="seg-opt" data-preset="portrait">HD Port</button>
+          <button class="seg-opt" data-preset="landscape4k">4K Land</button>
+          <button class="seg-opt" data-preset="portrait4k">4K Port</button>
+          <button class="seg-opt" data-preset="custom">Custom</button>
         </div>
-      </div>
 
-      <!-- 2. Background Image Settings -->
-      <div class="control-card">
-        <div class="section-title">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          2. Background Image
+        <div class="hidden" id="custom-size-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="field">
+            <div class="field-label-row">
+              <label for="custom-w">Width</label>
+              <span class="label-badge tn">px</span>
+            </div>
+            <input type="number" id="custom-w" class="input tn" value="1920" min="100" max="8000">
+          </div>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="custom-h">Height</label>
+              <span class="label-badge tn">px</span>
+            </div>
+            <input type="number" id="custom-h" class="input tn" value="1080" min="100" max="8000">
+          </div>
         </div>
-        
+      </section>
+
+      <!-- 02. Background Image Settings -->
+      <section class="control-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-num tn">02</span> Background Image
+          </div>
+          <span class="tag tag-neutral" id="bg-status-tag">EMPTY</span>
+        </div>
+
         <div class="upload-zone" id="bg-upload-zone">
-          <svg viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-          </svg>
-          <p>Drag background image here</p>
-          <span>or click to browse local files</span>
-          <input type="file" id="bg-image-input" accept="image/jpeg, image/png">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <div style="font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Drag Image File Here</div>
+          <div style="font-size: 11px; opacity: 0.65;">or click to browse local drive (PNG, JPG)</div>
+          <input type="file" id="bg-image-input" accept="image/jpeg, image/png, image/webp">
         </div>
 
-        <div id="bg-adjustments-panel" class="hidden" style="margin-top: 1rem;">
-          <div class="image-meta-bar">
-            <span class="image-name" id="bg-image-name">No file selected</span>
-            <button class="remove-image-btn" id="remove-image-btn">Remove</button>
+        <div id="bg-adjustments-panel" class="hidden" style="display: flex; flex-direction: column; gap: var(--space-3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--color-surface-card); border: 1px solid var(--color-divider-subtle); padding: 6px 8px;">
+            <span class="tn" id="bg-image-name" style="font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px;">image.jpg</span>
+            <button class="btn btn-ghost" id="remove-image-btn" style="color: var(--color-accent); padding: 2px 6px; font-size: 11px;">Remove</button>
           </div>
 
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <label>Image Sizing Mode</label>
-            <div class="btn-toggle-group">
-              <button class="btn-toggle active" id="mode-cover">Cover (Fill)</button>
-              <button class="btn-toggle" id="mode-contain">Contain (Fit)</button>
+          <!-- Sizing Mode -->
+          <div class="field">
+            <div class="field-label-row">
+              <label>Sizing Strategy</label>
+            </div>
+            <div class="seg">
+              <button class="seg-opt active" id="mode-cover">Cover (Fill Screen)</button>
+              <button class="seg-opt" id="mode-contain">Contain (Fit Aspect)</button>
             </div>
           </div>
 
-          <div class="control-group">
-            <div class="label-with-value">
+          <!-- Grayscale Photo Rule (CueSmith Modernist Standard) -->
+          <label class="toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-title">Modernist B&W Grayscale</span>
+              <span class="toggle-desc">High-contrast pure mono print treatment</span>
+            </div>
+            <input type="checkbox" id="bg-grayscale-toggle" class="checkbox-modern">
+          </label>
+
+          <!-- Zoom & Offsets -->
+          <div class="field">
+            <div class="field-label-row">
               <label for="bg-zoom">Scale / Zoom</label>
-              <span class="label-val" id="bg-zoom-val">1.0x</span>
+              <span class="label-badge tn" id="bg-zoom-val">1.00×</span>
             </div>
             <input type="range" id="bg-zoom" min="1.0" max="5.0" step="0.05" value="1.0">
           </div>
 
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="bg-offset-x">Position Offset X</label>
-              <span class="label-val" id="bg-offset-x-val">0%</span>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="field">
+              <div class="field-label-row">
+                <label for="bg-offset-x">Offset X</label>
+                <span class="label-badge tn" id="bg-offset-x-val">0%</span>
+              </div>
+              <input type="range" id="bg-offset-x" min="-100" max="100" step="1" value="0">
             </div>
-            <input type="range" id="bg-offset-x" min="-100" max="100" step="1" value="0">
+            <div class="field">
+              <div class="field-label-row">
+                <label for="bg-offset-y">Offset Y</label>
+                <span class="label-badge tn" id="bg-offset-y-val">0%</span>
+              </div>
+              <input type="range" id="bg-offset-y" min="-100" max="100" step="1" value="0">
+            </div>
           </div>
 
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="bg-offset-y">Position Offset Y</label>
-              <span class="label-val" id="bg-offset-y-val">0%</span>
-            </div>
-            <input type="range" id="bg-offset-y" min="-100" max="100" step="1" value="0">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-block" id="pan-bg-tool-btn" title="Click to drag background directly on canvas">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+              Pan on Canvas (Space)
+            </button>
+            <button class="btn btn-secondary" id="reset-bg-btn" title="Reset image alignment">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5"/></svg>
+            </button>
           </div>
+        </div>
+      </section>
 
-          <button class="reset-btn" id="reset-bg-btn" style="margin-top: 0.5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-            </svg>
-            Reset Image Layout
+      <!-- 03. Text Layers Manager -->
+      <section class="control-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-num tn">03</span> Layers Manager
+          </div>
+          <span class="tag tag-accent tn" id="layers-count-badge">1 LAYER</span>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary btn-block" id="add-layer-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Text Layer
+          </button>
+          <button class="btn btn-secondary" id="duplicate-layer-btn" title="Duplicate selected layer (Cmd+D)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="0" ry="0"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>
-      </div>
 
-      <!-- 3. Multiple Text Layers Manager -->
-      <div class="control-card">
-        <div class="section-title">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          3. Text Layers Manager
+        <!-- Drag-and-drop Reorderable Layers List -->
+        <div class="layers-container" id="layers-list-container" title="Drag handles to reorder layers">
+          <!-- Dynamic layer cards injected by JavaScript -->
         </div>
-        
-        <button class="btn-primary-action" id="add-layer-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Text Layer
-        </button>
-
-        <div class="layers-list-container" id="layers-list-container">
-          <!-- Dynamic layer item list -->
+        <div style="font-size: 10px; color: color-mix(in srgb, var(--color-text) 50%, transparent); text-transform: uppercase; letter-spacing: 0.05em;">
+          Hint: Drag cards to reorder stacking · Click to activate
         </div>
-      </div>
+      </section>
 
-      <!-- 4. Typography Controls (syncs dynamically to selected active layer) -->
-      <div class="control-card" id="typography-panel">
-        <div class="section-title">
-          <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-          4. Format Selected Layer
+      <!-- 04. Selected Layer Typography & Formatting -->
+      <section class="control-card" id="typography-panel">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-num tn">04</span> Selected Layer
+          </div>
+          <span class="tag tag-live" id="active-layer-tag">ACTIVE</span>
         </div>
 
-        <div class="control-group">
-          <label for="text-content">Text Overlay Content</label>
-          <textarea id="text-content" placeholder="Type layer text here..."></textarea>
+        <!-- Content -->
+        <div class="field">
+          <div class="field-label-row">
+            <label for="text-content">Layer Text Content</label>
+          </div>
+          <textarea id="text-content" class="input" placeholder="Enter headline or signage text..."></textarea>
         </div>
 
-        <div class="control-group">
-          <label for="text-font">Font Family</label>
-          <select id="text-font">
-            <optgroup label="Google Fonts (Curated)">
-              <option value="Outfit" selected>Outfit (Premium Rounded)</option>
-              <option value="Inter">Inter (Sleek Sans)</option>
-              <option value="Montserrat">Montserrat (Geometric)</option>
-              <option value="Playfair Display">Playfair Display (Elegant Serif)</option>
-              <option value="Space Grotesk">Space Grotesk (Tech/Modern)</option>
+        <!-- Font Family Selection -->
+        <div class="field">
+          <div class="field-label-row">
+            <label for="text-font">Font Family</label>
+          </div>
+          <select id="text-font" class="input">
+            <optgroup label="CueSmith Brand Standard">
+              <option value="Archivo" selected>Archivo (Modernist Mono-Grotesque)</option>
             </optgroup>
-            <optgroup label="System Fonts">
-              <option value="Verdana">Verdana</option>
+            <optgroup label="Curated Display Fonts">
+              <option value="Space Grotesk">Space Grotesk (Architectural Tech)</option>
+              <option value="Inter">Inter (Swiss Neutral Sans)</option>
+              <option value="Outfit">Outfit (Geometric Grotesque)</option>
+              <option value="Montserrat">Montserrat (Poster Heavy)</option>
+              <option value="Playfair Display">Playfair Display (High-Contrast Serif)</option>
+            </optgroup>
+            <optgroup label="System Standard">
               <option value="Arial">Arial</option>
-              <option value="Tahoma">Tahoma</option>
-              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Verdana">Verdana</option>
               <option value="Georgia">Georgia</option>
-              <option value="Times New Roman">Times New Roman</option>
-              <option value="Garamond">Garamond</option>
               <option value="Impact">Impact</option>
               <option value="Courier New">Courier New (Monospace)</option>
-              <option value="system-ui">System UI Default</option>
             </optgroup>
           </select>
         </div>
 
-        <!-- Custom Font uploader -->
-        <div class="control-group">
-          <button class="upload-file-btn" onclick="document.getElementById('font-file-input').click();">
+        <!-- Custom Font File Upload -->
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary btn-block" onclick="document.getElementById('font-file-input').click();">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-            Upload Custom Font (.ttf / .otf)
+            Upload Custom TTF / OTF
           </button>
           <input type="file" id="font-file-input" accept=".ttf, .otf" style="display: none;">
         </div>
 
-        <div class="control-group">
-          <label>Text Horizontal Align</label>
-          <div class="btn-toggle-group" id="align-toggles">
-            <button class="btn-toggle" data-align="left">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        <!-- Text Alignment Segmented Control -->
+        <div class="field">
+          <div class="field-label-row">
+            <label>Horizontal Alignment</label>
+          </div>
+          <div class="seg" id="align-toggles">
+            <button class="seg-opt" data-align="left" title="Flush Left (System standard)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+              Left
             </button>
-            <button class="btn-toggle" data-align="center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+            <button class="seg-opt active" data-align="center" title="Center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+              Center
             </button>
-            <button class="btn-toggle" data-align="right">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+            <button class="seg-opt" data-align="right" title="Flush Right">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+              Right
             </button>
           </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="collapsible-header" onclick="toggleCollapsible('text-layout-details', 'text-chevron')">
-          <h3>Position & Style Settings</h3>
-          <svg class="chevron-icon" id="text-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        <!-- Position Coordinates (X & Y) with live drag sync -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="field">
+            <div class="field-label-row">
+              <label for="text-x">Pos X</label>
+              <span class="label-badge tn" id="text-x-val">50.0%</span>
+            </div>
+            <input type="range" id="text-x" min="0" max="100" step="0.5" value="50">
+          </div>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="text-y">Pos Y</label>
+              <span class="label-badge tn" id="text-y-val">45.0%</span>
+            </div>
+            <input type="range" id="text-y" min="0" max="100" step="0.5" value="45">
+          </div>
         </div>
 
-        <div class="collapsible-content hidden" id="text-layout-details">
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="text-x">H-Position (X)</label>
-              <span class="label-val" id="text-x-val">50%</span>
-            </div>
-            <input type="range" id="text-x" min="0" max="100" value="50">
-          </div>
+        <!-- Quick Align Helpers -->
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary btn-block" id="center-x-btn" title="Center text horizontally (50%)">
+            Center Horizontally
+          </button>
+          <button class="btn btn-secondary btn-block" id="center-y-btn" title="Center text vertically (50%)">
+            Center Vertically
+          </button>
+        </div>
 
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="text-y">V-Position (Y)</label>
-              <span class="label-val" id="text-y-val">50%</span>
+        <!-- Sizing & Weight -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="field">
+            <div class="field-label-row">
+              <label for="text-font-size">Font Size</label>
+              <span class="label-badge tn" id="text-font-size-val">70px</span>
             </div>
-            <input type="range" id="text-y" min="0" max="100" value="50">
+            <input type="range" id="text-font-size" min="14" max="280" value="70">
           </div>
-
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="text-font-size">Font Size (px)</label>
-              <span class="label-val" id="text-font-size-val">60px</span>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="text-weight">Weight</label>
             </div>
-            <input type="range" id="text-font-size" min="12" max="250" value="60">
-          </div>
-
-          <div class="control-group">
-            <label for="text-weight">Font Weight</label>
-            <select id="text-weight">
+            <select id="text-weight" class="input tn">
               <option value="400">Regular (400)</option>
               <option value="500">Medium (500)</option>
-              <option value="600">Semi-Bold (600)</option>
+              <option value="600">SemiBold (600)</option>
               <option value="700">Bold (700)</option>
-              <option value="800">Extra-Bold (800)</option>
+              <option value="800" selected>ExtraBold (800)</option>
+              <option value="900">Black (900)</option>
             </select>
           </div>
+        </div>
 
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="text-line-height">Line Height</label>
-              <span class="label-val" id="text-line-height-val">1.2</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="field">
+            <div class="field-label-row">
+              <label for="text-line-height">Line Gap</label>
+              <span class="label-badge tn" id="text-line-height-val">1.2</span>
             </div>
-            <input type="range" id="text-line-height" min="0.8" max="2.5" step="0.1" value="1.2">
+            <input type="range" id="text-line-height" min="0.8" max="2.5" step="0.05" value="1.2">
+          </div>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="text-letter-spacing">Letter Space</label>
+              <span class="label-badge tn" id="text-letter-spacing-val">1.5px</span>
+            </div>
+            <input type="range" id="text-letter-spacing" min="-4" max="30" step="0.5" value="1.5">
+          </div>
+        </div>
+
+        <!-- Color Picker -->
+        <div class="field">
+          <div class="field-label-row">
+            <label for="text-color">Ink Color</label>
+          </div>
+          <div class="color-row">
+            <input type="color" id="text-color" value="#ffffff">
+            <input type="text" id="text-color-hex" class="input tn" value="#ffffff" placeholder="#ffffff">
+          </div>
+        </div>
+
+        <!-- Readability Sub-panel: Shadow & Backplate -->
+        <div class="collapsible-header" id="collapsible-trigger-effects">
+          <span>Readability, Shadow & Plate</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="chevron-effects"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
+        <div class="collapsible-content hidden" id="collapsible-body-effects">
+          <!-- Text Drop Shadow -->
+          <label class="toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-title">Text Drop Shadow</span>
+              <span class="toggle-desc">Legibility blur on bright imagery</span>
+            </div>
+            <input type="checkbox" id="enable-shadow" class="checkbox-modern">
+          </label>
+
+          <div id="shadow-controls-wrapper" class="hidden" style="display: flex; flex-direction: column; gap: 8px; border-left: 2px solid var(--color-divider); padding-left: 10px;">
+            <div class="color-row">
+              <input type="color" id="shadow-color" value="#000000">
+              <input type="text" id="shadow-color-hex" class="input tn" value="#000000">
+            </div>
+            <div class="field">
+              <div class="field-label-row">
+                <label for="shadow-blur">Blur Radius</label>
+                <span class="label-badge tn" id="shadow-blur-val">15px</span>
+              </div>
+              <input type="range" id="shadow-blur" min="0" max="40" value="15">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div class="field">
+                <div class="field-label-row"><label for="shadow-x">Offset X</label></div>
+                <input type="number" id="shadow-x" class="input tn" value="3" min="-50" max="50">
+              </div>
+              <div class="field">
+                <div class="field-label-row"><label for="shadow-y">Offset Y</label></div>
+                <input type="number" id="shadow-y" class="input tn" value="3" min="-50" max="50">
+              </div>
+            </div>
           </div>
 
-          <div class="control-group">
-            <div class="label-with-value">
-              <label for="text-letter-spacing">Letter Spacing</label>
-              <span class="label-val" id="text-letter-spacing-val">0px</span>
+          <!-- Backing Box / Plate -->
+          <label class="toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-title">Backing Plate Box</span>
+              <span class="toggle-desc">Architectural surface behind text</span>
             </div>
-            <input type="range" id="text-letter-spacing" min="-5" max="30" step="0.5" value="0">
-          </div>
+            <input type="checkbox" id="enable-bg-block" class="checkbox-modern">
+          </label>
 
-          <div class="control-group">
-            <label for="text-color">Text Color</label>
-            <div class="color-picker-wrapper">
-              <input type="color" id="text-color" value="#ffffff">
-              <input type="text" id="text-color-hex" value="#ffffff" placeholder="#ffffff" style="max-width: 100px;">
+          <div id="bg-block-controls-wrapper" class="hidden" style="display: flex; flex-direction: column; gap: 8px; border-left: 2px solid var(--color-divider); padding-left: 10px;">
+            <div class="color-row">
+              <input type="color" id="bg-block-color" value="#000000">
+              <input type="text" id="bg-block-color-hex" class="input tn" value="#000000">
             </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <!-- Legibility properties embedded per layer -->
-          <div class="control-group">
-            <div class="switch-container">
-              <div class="switch-label-group">
-                <label style="margin-bottom: 0;">Text Shadow</label>
-                <span class="switch-desc">Blur or drop shadow</span>
+            <div class="field">
+              <div class="field-label-row">
+                <label for="bg-block-opacity">Plate Opacity</label>
+                <span class="label-badge tn" id="bg-block-opacity-val">60%</span>
               </div>
-              <label class="switch">
-                <input type="checkbox" id="enable-shadow">
-                <span class="slider"></span>
-              </label>
+              <input type="range" id="bg-block-opacity" min="0" max="100" value="60">
             </div>
-            
-            <div id="shadow-controls-wrapper" class="hidden" style="margin-top: 0.75rem;">
-              <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
-                <input type="color" id="shadow-color" value="#000000">
-                <input type="text" id="shadow-color-hex" value="#000000" style="max-width: 100px;">
+            <div class="field">
+              <div class="field-label-row">
+                <label for="bg-block-padding">Plate Padding</label>
+                <span class="label-badge tn" id="bg-block-padding-val">20px</span>
               </div>
-              <div class="control-group" style="margin-bottom: 0.5rem;">
-                <div class="label-with-value">
-                  <label for="shadow-blur">Shadow Blur</label>
-                  <span class="label-val" id="shadow-blur-val">10px</span>
-                </div>
-                <input type="range" id="shadow-blur" min="0" max="30" value="10">
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div>
-                  <label for="shadow-x" style="font-size: 0.75rem;">Offset X</label>
-                  <input type="number" id="shadow-x" value="2" min="-30" max="30" style="padding: 0.4rem 0.6rem;">
-                </div>
-                <div>
-                  <label for="shadow-y" style="font-size: 0.75rem;">Offset Y</label>
-                  <input type="number" id="shadow-y" value="2" min="-30" max="30" style="padding: 0.4rem 0.6rem;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <div class="switch-container">
-              <div class="switch-label-group">
-                <label style="margin-bottom: 0;">Text Background Panel</label>
-                <span class="switch-desc">Backing box block</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="enable-bg-block">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div id="bg-block-controls-wrapper" class="hidden" style="margin-top: 0.75rem;">
-              <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem;">
-                <input type="color" id="bg-block-color" value="#000000">
-                <input type="text" id="bg-block-color-hex" value="#000000" style="max-width: 100px;">
-              </div>
-              <div class="control-group" style="margin-bottom: 0.5rem;">
-                <div class="label-with-value">
-                  <label for="bg-block-opacity">Panel Opacity</label>
-                  <span class="label-val" id="bg-block-opacity-val">60%</span>
-                </div>
-                <input type="range" id="bg-block-opacity" min="0" max="100" value="60">
-              </div>
-              <div class="control-group" style="margin-bottom: 0.5rem;">
-                <div class="label-with-value">
-                  <label for="bg-block-padding">Panel Padding (px)</label>
-                  <span class="label-val" id="bg-block-padding-val">20px</span>
-                </div>
-                <input type="range" id="bg-block-padding" min="0" max="80" value="20">
-              </div>
-              <div class="control-group" style="margin-bottom: 0;">
-                <div class="label-with-value">
-                  <label for="bg-block-radius">Border Radius (px)</label>
-                  <span class="label-val" id="bg-block-radius-val">8px</span>
-                </div>
-                <input type="range" id="bg-block-radius" min="0" max="40" value="8">
-              </div>
+              <input type="range" id="bg-block-padding" min="0" max="80" value="20">
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- 5. Canvas Globals & Readability Overlay -->
-      <div class="control-card">
-        <div class="section-title">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 1 0 10 10"/></svg>
-          5. Global Visual Settings
+      <!-- 05. Global Canvas & Readability -->
+      <section class="control-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-num tn">05</span> Canvas Settings
+          </div>
         </div>
 
-        <div class="control-group">
-          <div class="switch-container">
-            <div class="switch-label-group">
-              <label style="margin-bottom: 0;">Canvas Image Overlay Tint</label>
-              <span class="switch-desc">Applies color filter to background</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="enable-tint">
-              <span class="slider"></span>
-            </label>
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Canvas Tint Filter</span>
+            <span class="toggle-desc">Global dimming filter for signage legibility</span>
           </div>
-          
-          <div id="tint-controls-wrapper" class="hidden" style="margin-top: 0.75rem;">
-            <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
-              <input type="color" id="tint-color" value="#000000">
-              <input type="text" id="tint-color-hex" value="#000000" style="max-width: 100px;">
-            </div>
-            <div class="label-with-value">
-              <label for="tint-opacity">Tint Opacity</label>
-              <span class="label-val" id="tint-opacity-val">40%</span>
+          <input type="checkbox" id="enable-tint" class="checkbox-modern">
+        </label>
+
+        <div id="tint-controls-wrapper" class="hidden" style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="color-row">
+            <input type="color" id="tint-color" value="#000000">
+            <input type="text" id="tint-color-hex" class="input tn" value="#000000">
+          </div>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="tint-opacity">Filter Opacity</label>
+              <span class="label-badge tn" id="tint-opacity-val">40%</span>
             </div>
             <input type="range" id="tint-opacity" min="0" max="100" value="40">
           </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="control-group">
-          <label for="canvas-bg-color">Canvas Base Color</label>
-          <div class="color-picker-wrapper">
-            <input type="color" id="canvas-bg-color" value="#0b0f19">
-            <input type="text" id="canvas-bg-color-hex" value="#0b0f19" style="max-width: 100px;">
+        <div class="field" style="margin-top: 4px;">
+          <div class="field-label-row">
+            <label for="canvas-bg-color">Canvas Base Solid Color</label>
           </div>
-          <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 0.25rem;">Background color visible on margins</span>
+          <div class="color-row">
+            <input type="color" id="canvas-bg-color" value="#0b0f19">
+            <input type="text" id="canvas-bg-color-hex" class="input tn" value="#0b0f19">
+          </div>
         </div>
-      </div>
-      
-    </div>
+      </section>
 
-    <!-- Central visual viewport -->
-    <div class="preview-pane">
+    </aside>
+
+    <!-- Central Viewport & Scaled Preview Area -->
+    <section class="preview-pane" id="preview-pane">
       
-      <div class="preview-frame" id="preview-frame">
+      <!-- Quick Action Floating Bar -->
+      <div class="canvas-quick-toolbar">
+        <button class="toolbar-tool-btn active" id="tool-select-btn" title="Direct Pointer Selection and Dragging">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
+          Select & Drag
+        </button>
+        <button class="toolbar-tool-btn" id="tool-pan-btn" title="Drag to Pan Background Image (or Hold Spacebar)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8M6 14v-1.5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4a8 8 0 0 0 8 8h2a8 8 0 0 0 8-8V11a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2"/></svg>
+          Pan Bg (Space)
+        </button>
+        
+        <div class="toolbar-sep"></div>
+
+        <button class="toolbar-tool-btn active" id="tool-snap-btn" title="Toggle Magnetic Alignment Snapping to Center (S)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          Snap Guides
+        </button>
+
+        <div class="toolbar-sep"></div>
+
+        <button class="toolbar-tool-btn" id="quick-center-x" title="Center selected layer horizontally">
+          Center X
+        </button>
+        <button class="toolbar-tool-btn" id="quick-center-y" title="Center selected layer vertically">
+          Center Y
+        </button>
+        <button class="toolbar-tool-btn" id="quick-delete-layer" style="color: var(--color-accent);" title="Delete selected layer (Delete/Backspace)">
+          Delete
+        </button>
+      </div>
+
+      <!-- Preview Frame Canvas -->
+      <div class="preview-frame checkerboard" id="preview-frame">
         <div class="preview-canvas-wrapper" id="preview-canvas-wrapper">
-          <img id="preview-bg-image" class="preview-bg-image" alt="background view">
+          <!-- Background Image -->
+          <img id="preview-bg-image" class="preview-bg-image" alt="signage background">
+          
+          <!-- Tint Overlay -->
           <div id="preview-tint" class="preview-tint"></div>
-          <!-- Holds all dynamic layers -->
+
+          <!-- Alignment Snap Crosshairs -->
+          <div id="snap-guide-x" class="snap-guide snap-guide-x"></div>
+          <div id="snap-guide-y" class="snap-guide snap-guide-y"></div>
+
+          <!-- Dynamic Text Layers Container -->
           <div id="preview-text-container" class="preview-text-container"></div>
         </div>
       </div>
 
-      <div class="workspace-toolbar">
+      <!-- Bottom Viewport Status Bar -->
+      <div class="viewport-status-bar">
         <label>
-          <input type="checkbox" id="toggle-grid" checked>
-          <span>Show Workspace Grid</span>
+          <input type="checkbox" id="toggle-grid" class="checkbox-modern" checked style="width: 14px; height: 14px;">
+          <span>Checker Grid</span>
         </label>
-        <div class="zoom-control-group">
+
+        <div class="zoom-group">
           <span>Scale:</span>
-          <button id="zoom-fit-btn" class="zoom-btn active" title="Scale preview to fit viewport">Fit</button>
+          <button class="btn btn-secondary" id="zoom-fit-btn" style="padding: 2px 8px; font-size: 11px;">Fit</button>
           <input type="range" id="preview-zoom" min="10" max="100" value="100">
-          <span id="preview-zoom-val">100%</span>
+          <span class="tn" id="preview-zoom-val" style="min-width: 36px;">100%</span>
         </div>
+
+        <span class="tn" id="viewport-dimensions-info" style="color: color-mix(in srgb, var(--color-text) 60%, transparent);">1920 × 1080 PX</span>
       </div>
 
-    </div>
+    </section>
   </main>
 
+  <!-- Keyboard Shortcuts & Help Modal Dialog -->
+  <div class="dialog-backdrop" id="shortcuts-dialog">
+    <div class="dialog">
+      <div class="dialog-header">
+        <h3 class="dialog-title">Keyboard Shortcuts & Gestures</h3>
+        <button class="btn btn-ghost" id="close-dialog-btn" style="padding: 2px 6px;">✕</button>
+      </div>
+      <table class="shortcut-table">
+        <thead>
+          <tr>
+            <th>Shortcut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="kbd">Click & Drag</span> on text</td>
+            <td>Directly move & position text layer on canvas</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Space + Drag</span> on canvas</td>
+            <td>Directly pan background image layout</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Arrow Keys</span></td>
+            <td>Nudge active layer by 0.5%</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Shift + Arrow Keys</span></td>
+            <td>Nudge active layer by 5.0% (large step)</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Cmd + D</span> / <span class="kbd">Ctrl + D</span></td>
+            <td>Duplicate currently selected text layer</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Delete</span> / <span class="kbd">Backspace</span></td>
+            <td>Delete selected text layer (when not editing input)</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">S</span></td>
+            <td>Toggle magnetic center-snap alignment guidelines</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Drag & Drop</span> files anywhere</td>
+            <td>Drop image for background, JSON to load, TTF/OTF for font</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Cmd + Z</span> / <span class="kbd">Ctrl + Z</span></td>
+            <td>Undo last coordinate or layer change</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" id="confirm-dialog-btn">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Application Logic -->
   <script>
-    // State management
+    /* ==========================================================================
+       State Management & Preset Definitions
+       ========================================================================== */
+    const PRESETS = {
+      landscape: { width: 1920, height: 1080, label: 'HD Landscape' },
+      portrait: { width: 1080, height: 1920, label: 'HD Portrait' },
+      landscape4k: { width: 3840, height: 2160, label: '4K Landscape' },
+      portrait4k: { width: 2160, height: 3840, label: '4K Portrait' },
+      custom: { width: 1920, height: 1080, label: 'Custom' }
+    };
+
     const state = {
-      preset: 'landscape', // landscape, portrait, landscape4k, portrait4k, custom
+      theme: 'daylight',
+      preset: 'landscape',
       width: 1920,
       height: 1080,
       zoomMode: 'fit',
-      
-      bgImage: null, 
+
+      // Background
+      bgImage: null,
       bgImageName: '',
-      bgSizeMode: 'cover', // cover, contain
+      bgSizeMode: 'cover',
       bgZoom: 1.0,
       bgOffsetX: 0,
       bgOffsetY: 0,
-      
+      bgGrayscale: false,
+
+      // Canvas globals
       canvasBgColor: '#0b0f19',
       enableTint: false,
       tintColor: '#000000',
       tintOpacity: 40,
-      
+
+      // Direct interaction modes
+      isPanMode: false,
+      isSpacePressed: false,
+      enableSnapping: true,
+
+      // Layers
       layers: [
         {
-          id: 'layer_initial_1',
-          textContent: 'DIGITAL SIGNAGE HEADER\nAwesome Presentation',
-          textFontFamily: 'Outfit',
+          id: 'layer_1',
+          textContent: 'CUESMITH DIGITAL SIGNAGE\nSHOW CONTROL · MAIN TERMINAL',
+          textFontFamily: 'Archivo',
           textWeight: '800',
           textAlign: 'center',
-          textX: 50,
-          textY: 45,
+          textX: 50.0,
+          textY: 45.0,
           textFontSize: 70,
           textLineHeight: 1.2,
           textLetterSpacing: 1.5,
@@ -1464,51 +1889,114 @@
           bgBlockColor: '#000000',
           bgBlockOpacity: 60,
           bgBlockPadding: 20,
-          bgBlockRadius: 8
+          bgBlockRadius: 0
         }
       ],
-      activeLayerId: 'layer_initial_1',
-      customFonts: [] // Array of { name, fileName, base64 }
+      activeLayerId: 'layer_1',
+      customFonts: []
     };
 
-    // Screen Dimensions Presets
-    const PRESETS = {
-      landscape: { width: 1920, height: 1080 },
-      portrait: { width: 1080, height: 1920 },
-      landscape4k: { width: 3840, height: 2160 },
-      portrait4k: { width: 2160, height: 3840 }
-    };
+    // Undo History Stack
+    const historyStack = [];
+    const MAX_HISTORY = 25;
 
-    const loadedGoogleFonts = new Set(['Outfit', 'Inter']);
+    function pushHistorySnapshot() {
+      if (historyStack.length >= MAX_HISTORY) {
+        historyStack.shift();
+      }
+      historyStack.push(JSON.stringify({
+        preset: state.preset,
+        width: state.width,
+        height: state.height,
+        bgZoom: state.bgZoom,
+        bgOffsetX: state.bgOffsetX,
+        bgOffsetY: state.bgOffsetY,
+        bgGrayscale: state.bgGrayscale,
+        canvasBgColor: state.canvasBgColor,
+        enableTint: state.enableTint,
+        tintColor: state.tintColor,
+        tintOpacity: state.tintOpacity,
+        layers: state.layers,
+        activeLayerId: state.activeLayerId
+      }));
+    }
 
-    // DOM cache
+    function undoLastAction() {
+      if (historyStack.length === 0) {
+        showToast('No more undo steps');
+        return;
+      }
+      const snapshot = JSON.parse(historyStack.pop());
+      state.preset = snapshot.preset;
+      state.width = snapshot.width;
+      state.height = snapshot.height;
+      state.bgZoom = snapshot.bgZoom;
+      state.bgOffsetX = snapshot.bgOffsetX;
+      state.bgOffsetY = snapshot.bgOffsetY;
+      state.bgGrayscale = snapshot.bgGrayscale;
+      state.canvasBgColor = snapshot.canvasBgColor;
+      state.enableTint = snapshot.enableTint;
+      state.tintColor = snapshot.tintColor;
+      state.tintOpacity = snapshot.tintOpacity;
+      state.layers = snapshot.layers;
+      state.activeLayerId = snapshot.activeLayerId;
+
+      syncAllUIControls();
+      updateCanvasDimensions();
+      updatePreview();
+      showToast('Action undone');
+    }
+
+    /* ==========================================================================
+       DOM Elements Cache
+       ========================================================================== */
     const el = {
+      // Header
+      themeToggleBtn: document.getElementById('theme-toggle-btn'),
+      themeBtnLabel: document.getElementById('theme-btn-label'),
+      shortcutsBtn: document.getElementById('shortcuts-btn'),
+      shortcutsDialog: document.getElementById('shortcuts-dialog'),
+      closeDialogBtn: document.getElementById('close-dialog-btn'),
+      confirmDialogBtn: document.getElementById('confirm-dialog-btn'),
+      loadBtn: document.getElementById('load-btn'),
+      loadProjectInput: document.getElementById('load-project-input'),
+      saveBtn: document.getElementById('save-btn'),
+      exportBtn: document.getElementById('export-btn'),
+
+      // Screen Format
       presetTabs: document.getElementById('preset-tabs'),
+      currentResBadge: document.getElementById('current-res-badge'),
       customSizeControls: document.getElementById('custom-size-controls'),
       customW: document.getElementById('custom-w'),
       customH: document.getElementById('custom-h'),
-      
+
+      // Background
+      bgStatusTag: document.getElementById('bg-status-tag'),
       bgUploadZone: document.getElementById('bg-upload-zone'),
       bgImageInput: document.getElementById('bg-image-input'),
       bgAdjustmentsPanel: document.getElementById('bg-adjustments-panel'),
       bgImageName: document.getElementById('bg-image-name'),
       removeImageBtn: document.getElementById('remove-image-btn'),
-      
       modeCover: document.getElementById('mode-cover'),
       modeContain: document.getElementById('mode-contain'),
+      bgGrayscaleToggle: document.getElementById('bg-grayscale-toggle'),
       bgZoom: document.getElementById('bg-zoom'),
       bgZoomVal: document.getElementById('bg-zoom-val'),
       bgOffsetX: document.getElementById('bg-offset-x'),
       bgOffsetXVal: document.getElementById('bg-offset-x-val'),
       bgOffsetY: document.getElementById('bg-offset-y'),
       bgOffsetYVal: document.getElementById('bg-offset-y-val'),
+      panBgToolBtn: document.getElementById('pan-bg-tool-btn'),
       resetBgBtn: document.getElementById('reset-bg-btn'),
-      
-      // Layer manager elements
+
+      // Layers Manager
+      layersCountBadge: document.getElementById('layers-count-badge'),
       addLayerBtn: document.getElementById('add-layer-btn'),
+      duplicateLayerBtn: document.getElementById('duplicate-layer-btn'),
       layersListContainer: document.getElementById('layers-list-container'),
-      
-      // Target active layer controls
+
+      // Typography / Format
+      activeLayerTag: document.getElementById('active-layer-tag'),
       textContent: document.getElementById('text-content'),
       textFont: document.getElementById('text-font'),
       fontFileInput: document.getElementById('font-file-input'),
@@ -1517,6 +2005,8 @@
       textXVal: document.getElementById('text-x-val'),
       textY: document.getElementById('text-y'),
       textYVal: document.getElementById('text-y-val'),
+      centerXBtn: document.getElementById('center-x-btn'),
+      centerYBtn: document.getElementById('center-y-btn'),
       textFontSize: document.getElementById('text-font-size'),
       textFontSizeVal: document.getElementById('text-font-size-val'),
       textWeight: document.getElementById('text-weight'),
@@ -1526,7 +2016,11 @@
       textLetterSpacingVal: document.getElementById('text-letter-spacing-val'),
       textColor: document.getElementById('text-color'),
       textColorHex: document.getElementById('text-color-hex'),
-      
+
+      // Collapsible Effects
+      collapsibleTriggerEffects: document.getElementById('collapsible-trigger-effects'),
+      collapsibleBodyEffects: document.getElementById('collapsible-body-effects'),
+      chevronEffects: document.getElementById('chevron-effects'),
       enableShadow: document.getElementById('enable-shadow'),
       shadowControlsWrapper: document.getElementById('shadow-controls-wrapper'),
       shadowColor: document.getElementById('shadow-color'),
@@ -1535,7 +2029,6 @@
       shadowBlurVal: document.getElementById('shadow-blur-val'),
       shadowX: document.getElementById('shadow-x'),
       shadowY: document.getElementById('shadow-y'),
-      
       enableBgBlock: document.getElementById('enable-bg-block'),
       bgBlockControlsWrapper: document.getElementById('bg-block-controls-wrapper'),
       bgBlockColor: document.getElementById('bg-block-color'),
@@ -1544,10 +2037,8 @@
       bgBlockOpacityVal: document.getElementById('bg-block-opacity-val'),
       bgBlockPadding: document.getElementById('bg-block-padding'),
       bgBlockPaddingVal: document.getElementById('bg-block-padding-val'),
-      bgBlockRadius: document.getElementById('bg-block-radius'),
-      bgBlockRadiusVal: document.getElementById('bg-block-radius-val'),
-      
-      // Global settings controls
+
+      // Canvas Settings
       enableTint: document.getElementById('enable-tint'),
       tintControlsWrapper: document.getElementById('tint-controls-wrapper'),
       tintColor: document.getElementById('tint-color'),
@@ -1556,24 +2047,58 @@
       tintOpacityVal: document.getElementById('tint-opacity-val'),
       canvasBgColor: document.getElementById('canvas-bg-color'),
       canvasBgColorHex: document.getElementById('canvas-bg-color-hex'),
-      
+
+      // Viewport & Canvas
+      previewPane: document.getElementById('preview-pane'),
       previewFrame: document.getElementById('preview-frame'),
+      previewCanvasWrapper: document.getElementById('preview-canvas-wrapper'),
       previewBgImage: document.getElementById('preview-bg-image'),
       previewTint: document.getElementById('preview-tint'),
+      snapGuideX: document.getElementById('snap-guide-x'),
+      snapGuideY: document.getElementById('snap-guide-y'),
       previewTextContainer: document.getElementById('preview-text-container'),
+
+      // Quick Toolbar
+      toolSelectBtn: document.getElementById('tool-select-btn'),
+      toolPanBtn: document.getElementById('tool-pan-btn'),
+      toolSnapBtn: document.getElementById('tool-snap-btn'),
+      quickCenterX: document.getElementById('quick-center-x'),
+      quickCenterY: document.getElementById('quick-center-y'),
+      quickDeleteLayer: document.getElementById('quick-delete-layer'),
+
+      // Viewport Status Bar
       toggleGrid: document.getElementById('toggle-grid'),
+      zoomFitBtn: document.getElementById('zoom-fit-btn'),
       previewZoom: document.getElementById('preview-zoom'),
       previewZoomVal: document.getElementById('preview-zoom-val'),
-      zoomFitBtn: document.getElementById('zoom-fit-btn'),
-      
-      // JSON uploader triggers
-      loadBtn: document.getElementById('load-btn'),
-      loadProjectInput: document.getElementById('load-project-input'),
-      saveBtn: document.getElementById('save-btn'),
-      exportBtn: document.getElementById('export-btn')
+      viewportDimensionsInfo: document.getElementById('viewport-dimensions-info'),
+
+      // Overlays
+      globalDragOverlay: document.getElementById('global-drag-overlay'),
+      dragOverlayTitle: document.getElementById('drag-overlay-title'),
+      dragOverlaySubtitle: document.getElementById('drag-overlay-subtitle'),
+      toastContainer: document.getElementById('toast-container')
     };
 
-    // Helper functions
+    /* ==========================================================================
+       Toast Notifications
+       ========================================================================== */
+    function showToast(message, duration = 2800) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      el.toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 250);
+      }, duration);
+    }
+
+    /* ==========================================================================
+       Helper Utilities
+       ========================================================================== */
     function hexToRgba(hex, alpha) {
       let r = 0, g = 0, b = 0;
       if (hex.length === 4) {
@@ -1588,92 +2113,8 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function toggleCollapsible(contentId, chevronId) {
-      const content = document.getElementById(contentId);
-      const chevron = document.getElementById(chevronId);
-      content.classList.toggle('hidden');
-      chevron.classList.toggle('rotated');
-    }
-
-    function updateZoomUI() {
-      if (state.zoomMode === 'fit') {
-        el.zoomFitBtn.classList.add('active');
-      } else {
-        el.zoomFitBtn.classList.remove('active');
-      }
-    }
-
-    function fitPreviewToScreen() {
-      if (state.zoomMode !== 'fit') return;
-      
-      const pane = el.previewFrame.parentElement;
-      const paneW = pane.clientWidth;
-      const paneH = pane.clientHeight;
-      
-      // Safety margin for padding (3rem = 48px on each side)
-      const maxW = Math.max(100, paneW - 96);
-      const maxH = Math.max(100, paneH - 96);
-      
-      const frameW = el.previewFrame.offsetWidth;
-      const frameH = el.previewFrame.offsetHeight;
-      if (!frameW || !frameH) return;
-      
-      const scaleX = maxW / frameW;
-      const scaleY = maxH / frameH;
-      const fitScale = Math.min(scaleX, scaleY);
-      
-      const zoomPercent = Math.max(10, Math.min(100, Math.floor(fitScale * 100)));
-      
-      el.previewZoom.value = zoomPercent;
-      el.previewZoomVal.textContent = zoomPercent + '%';
-      el.previewFrame.style.transform = `scale(${zoomPercent / 100})`;
-      
-      updateZoomUI();
-    }
-
-    // Binary / Base64 serialization conversions
-    function arrayBufferToBase64(buffer) {
-      let binary = '';
-      const bytes = new Uint8Array(buffer);
-      const len = bytes.byteLength;
-      for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return window.btoa(binary);
-    }
-
-    function base64ToArrayBuffer(base64) {
-      const binaryString = window.atob(base64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return bytes.buffer;
-    }
-
-    // Curated Google Fonts async loader
-    function loadGoogleFont(fontFamily) {
-      if (loadedGoogleFonts.has(fontFamily)) return Promise.resolve();
-      
-      return new Promise((resolve) => {
-        const linkId = 'gfont-' + fontFamily.toLowerCase().replace(/\s+/g, '-');
-        const link = document.createElement('link');
-        link.id = linkId;
-        link.rel = 'stylesheet';
-        link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@400;500;600;700;800&display=swap`;
-        
-        link.onload = () => {
-          loadedGoogleFonts.add(fontFamily);
-          resolve();
-        };
-        
-        document.head.appendChild(link);
-      });
-    }
-
     function getActiveLayer() {
-      return state.layers.find(l => l.id === state.activeLayerId);
+      return state.layers.find(l => l.id === state.activeLayerId) || state.layers[0];
     }
 
     function updateActiveLayerProp(key, value) {
@@ -1702,70 +2143,145 @@
       });
     }
 
-    // Layers List UI Operations
+    /* ==========================================================================
+       Layers List & Drag-and-Drop Reordering
+       ========================================================================== */
+    let draggedLayerId = null;
+
     function renderLayersList() {
-      const c = el.layersListContainer;
-      c.innerHTML = '';
-      
+      const container = el.layersListContainer;
+      container.innerHTML = '';
+
+      el.layersCountBadge.textContent = `${state.layers.length} ${state.layers.length === 1 ? 'LAYER' : 'LAYERS'}`;
+
       state.layers.forEach((layer, index) => {
-        const item = document.createElement('div');
-        item.className = 'layer-item' + (layer.id === state.activeLayerId ? ' active' : '');
-        
+        const card = document.createElement('div');
+        card.className = 'layer-card' + (layer.id === state.activeLayerId ? ' active' : '');
+        card.dataset.id = layer.id;
+        card.dataset.index = index;
+        card.draggable = true;
+
+        // Left Section: Handle + Title
+        const left = document.createElement('div');
+        left.className = 'layer-card-left';
+
+        const handle = document.createElement('span');
+        handle.className = 'layer-drag-handle';
+        handle.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>`;
+
         const title = document.createElement('span');
-        title.className = 'layer-title';
-        title.textContent = layer.textContent.trim().split('\n')[0] || `Text Box ${index + 1}`;
-        if (title.textContent.length > 20) {
-          title.textContent = title.textContent.substring(0, 17) + '...';
-        }
-        
+        title.className = 'layer-title-text';
+        title.textContent = layer.textContent.trim().split('\n')[0] || `Text Layer ${index + 1}`;
+
+        left.appendChild(handle);
+        left.appendChild(title);
+
+        // Actions: Up / Down / Delete
         const actions = document.createElement('div');
-        actions.className = 'layer-actions';
-        
-        // Move Up
+        actions.className = 'layer-card-actions';
+
         const upBtn = document.createElement('button');
-        upBtn.className = 'layer-action-btn';
+        upBtn.className = 'mini-btn';
         upBtn.innerHTML = '▲';
         upBtn.disabled = index === 0;
+        upBtn.title = 'Move Layer Up';
         upBtn.onclick = (e) => {
           e.stopPropagation();
+          pushHistorySnapshot();
           swapLayers(index, index - 1);
         };
-        
-        // Move Down
+
         const downBtn = document.createElement('button');
-        downBtn.className = 'layer-action-btn';
+        downBtn.className = 'mini-btn';
         downBtn.innerHTML = '▼';
         downBtn.disabled = index === state.layers.length - 1;
+        downBtn.title = 'Move Layer Down';
         downBtn.onclick = (e) => {
           e.stopPropagation();
+          pushHistorySnapshot();
           swapLayers(index, index + 1);
         };
-        
-        // Delete
+
         const delBtn = document.createElement('button');
-        delBtn.className = 'layer-action-btn delete';
-        delBtn.innerHTML = '✖';
+        delBtn.className = 'mini-btn delete';
+        delBtn.innerHTML = '✕';
         delBtn.disabled = state.layers.length <= 1;
+        delBtn.title = 'Delete Layer';
         delBtn.onclick = (e) => {
           e.stopPropagation();
           deleteTextLayer(layer.id);
         };
-        
+
         actions.appendChild(upBtn);
         actions.appendChild(downBtn);
         actions.appendChild(delBtn);
-        
-        item.appendChild(title);
-        item.appendChild(actions);
-        
-        item.onclick = () => {
+
+        card.appendChild(left);
+        card.appendChild(actions);
+
+        // Selection Click
+        card.onclick = () => {
           state.activeLayerId = layer.id;
           renderLayersList();
           syncActiveLayerControls();
           updatePreview();
         };
-        
-        c.appendChild(item);
+
+        // Drag and Drop Events for Sidebar Reordering
+        card.addEventListener('dragstart', (e) => {
+          draggedLayerId = layer.id;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', layer.id);
+        });
+
+        card.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const rect = card.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          card.classList.remove('drop-target-before', 'drop-target-after');
+          if (e.clientY < midY) {
+            card.classList.add('drop-target-before');
+          } else {
+            card.classList.add('drop-target-after');
+          }
+        });
+
+        card.addEventListener('dragleave', () => {
+          card.classList.remove('drop-target-before', 'drop-target-after');
+        });
+
+        card.addEventListener('drop', (e) => {
+          e.preventDefault();
+          card.classList.remove('drop-target-before', 'drop-target-after');
+          if (!draggedLayerId || draggedLayerId === layer.id) return;
+
+          pushHistorySnapshot();
+
+          const fromIdx = state.layers.findIndex(l => l.id === draggedLayerId);
+          const toIdx = state.layers.findIndex(l => l.id === layer.id);
+          const rect = card.getBoundingClientRect();
+          const insertBefore = e.clientY < (rect.top + rect.height / 2);
+
+          const [movedItem] = state.layers.splice(fromIdx, 1);
+          let targetIndex = state.layers.findIndex(l => l.id === layer.id);
+          if (!insertBefore) targetIndex += 1;
+
+          state.layers.splice(targetIndex, 0, movedItem);
+          state.activeLayerId = movedItem.id;
+
+          renderLayersList();
+          updatePreview();
+          showToast('Layers reordered');
+        });
+
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging', 'drop-target-before', 'drop-target-after');
+          draggedLayerId = null;
+        });
+
+        container.appendChild(card);
       });
     }
 
@@ -1778,31 +2294,37 @@
     }
 
     function deleteTextLayer(layerId) {
-      if (state.layers.length <= 1) return;
+      if (state.layers.length <= 1) {
+        showToast('At least one layer must remain');
+        return;
+      }
+      pushHistorySnapshot();
       const idx = state.layers.findIndex(l => l.id === layerId);
       state.layers.splice(idx, 1);
-      
+
       if (state.activeLayerId === layerId) {
         state.activeLayerId = state.layers[Math.max(0, idx - 1)].id;
       }
       renderLayersList();
       syncActiveLayerControls();
       updatePreview();
+      showToast('Layer deleted');
     }
 
     function addTextLayer() {
-      const newId = 'layer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      pushHistorySnapshot();
+      const newId = 'layer_' + Date.now();
       const newLayer = {
         id: newId,
-        textContent: 'New Signage Text',
-        textFontFamily: 'Inter',
-        textWeight: '700',
+        textContent: 'NEW SIGNAGE HEADER\nSubline Detail Text',
+        textFontFamily: 'Archivo',
+        textWeight: '800',
         textAlign: 'center',
-        textX: 50,
-        textY: 50 + (state.layers.length * 5) % 30, // offset slightly
-        textFontSize: 48,
+        textX: 50.0,
+        textY: 50.0 + ((state.layers.length * 6) % 30),
+        textFontSize: 56,
         textLineHeight: 1.2,
-        textLetterSpacing: 0,
+        textLetterSpacing: 1.0,
         textColor: '#ffffff',
         enableShadow: false,
         shadowColor: '#000000',
@@ -1812,196 +2334,937 @@
         enableBgBlock: false,
         bgBlockColor: '#000000',
         bgBlockOpacity: 60,
-        bgBlockPadding: 15,
-        bgBlockRadius: 6
+        bgBlockPadding: 16,
+        bgBlockRadius: 0
       };
-      
+
       state.layers.push(newLayer);
       state.activeLayerId = newId;
       renderLayersList();
       syncActiveLayerControls();
       updatePreview();
+      showToast('New text layer added');
     }
 
-    // Map active layer to sidebar formatting sliders
+    function duplicateActiveLayer() {
+      const active = getActiveLayer();
+      if (!active) return;
+      pushHistorySnapshot();
+
+      const newId = 'layer_' + Date.now();
+      const duplicated = JSON.parse(JSON.stringify(active));
+      duplicated.id = newId;
+      duplicated.textX = Math.min(95, duplicated.textX + 3);
+      duplicated.textY = Math.min(95, duplicated.textY + 3);
+
+      state.layers.push(duplicated);
+      state.activeLayerId = newId;
+      renderLayersList();
+      syncActiveLayerControls();
+      updatePreview();
+      showToast('Layer duplicated (Cmd+D)');
+    }
+
+    /* ==========================================================================
+       Sync Active Layer to Controls
+       ========================================================================== */
     function syncActiveLayerControls() {
       const layer = getActiveLayer();
       if (!layer) return;
-      
+
       el.textContent.value = layer.textContent;
       el.textFont.value = layer.textFontFamily;
       el.textWeight.value = layer.textWeight;
-      
-      document.querySelectorAll('#align-toggles .btn-toggle').forEach(btn => {
-        if (btn.dataset.align === layer.textAlign) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
+
+      document.querySelectorAll('#align-toggles .seg-opt').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.align === layer.textAlign);
       });
-      
+
       el.textX.value = layer.textX;
-      el.textXVal.textContent = layer.textX + '%';
+      el.textXVal.textContent = layer.textX.toFixed(1) + '%';
       el.textY.value = layer.textY;
-      el.textYVal.textContent = layer.textY + '%';
+      el.textYVal.textContent = layer.textY.toFixed(1) + '%';
+
       el.textFontSize.value = layer.textFontSize;
       el.textFontSizeVal.textContent = layer.textFontSize + 'px';
       el.textLineHeight.value = layer.textLineHeight;
       el.textLineHeightVal.textContent = layer.textLineHeight;
       el.textLetterSpacing.value = layer.textLetterSpacing;
       el.textLetterSpacingVal.textContent = layer.textLetterSpacing + 'px';
-      
+
       el.textColor.value = layer.textColor;
       el.textColorHex.value = layer.textColor;
-      
+
       el.enableShadow.checked = layer.enableShadow;
-      if (layer.enableShadow) {
-        el.shadowControlsWrapper.classList.remove('hidden');
-      } else {
-        el.shadowControlsWrapper.classList.add('hidden');
-      }
+      el.shadowControlsWrapper.classList.toggle('hidden', !layer.enableShadow);
       el.shadowColor.value = layer.shadowColor;
       el.shadowColorHex.value = layer.shadowColor;
       el.shadowBlur.value = layer.shadowBlur;
       el.shadowBlurVal.textContent = layer.shadowBlur + 'px';
       el.shadowX.value = layer.shadowX;
       el.shadowY.value = layer.shadowY;
-      
+
       el.enableBgBlock.checked = layer.enableBgBlock;
-      if (layer.enableBgBlock) {
-        el.bgBlockControlsWrapper.classList.remove('hidden');
-      } else {
-        el.bgBlockControlsWrapper.classList.add('hidden');
-      }
+      el.bgBlockControlsWrapper.classList.toggle('hidden', !layer.enableBgBlock);
       el.bgBlockColor.value = layer.bgBlockColor;
       el.bgBlockColorHex.value = layer.bgBlockColor;
       el.bgBlockOpacity.value = layer.bgBlockOpacity;
       el.bgBlockOpacityVal.textContent = layer.bgBlockOpacity + '%';
       el.bgBlockPadding.value = layer.bgBlockPadding;
       el.bgBlockPaddingVal.textContent = layer.bgBlockPadding + 'px';
-      el.bgBlockRadius.value = layer.bgBlockRadius;
-      el.bgBlockRadiusVal.textContent = layer.bgBlockRadius + 'px';
     }
 
-    // Initialize application settings & DOM events
-    function init() {
-      // Color synchronization events
-      syncColorControls(el.textColor, el.textColorHex, val => updateActiveLayerProp('textColor', val));
-      syncColorControls(el.tintColor, el.tintColorHex, val => { state.tintColor = val; updatePreview(); });
-      syncColorControls(el.shadowColor, el.shadowColorHex, val => updateActiveLayerProp('shadowColor', val));
-      syncColorControls(el.bgBlockColor, el.bgBlockColorHex, val => updateActiveLayerProp('bgBlockColor', val));
-      syncColorControls(el.canvasBgColor, el.canvasBgColorHex, val => { state.canvasBgColor = val; updatePreview(); });
+    function syncAllUIControls() {
+      renderLayersList();
+      syncActiveLayerControls();
 
-      // 1. Preset Tabs
+      // Screen Preset tabs
+      document.querySelectorAll('#preset-tabs .seg-opt').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.preset === state.preset);
+      });
+      el.customSizeControls.classList.toggle('hidden', state.preset !== 'custom');
+      el.currentResBadge.textContent = `${state.width} × ${state.height}`;
+      el.viewportDimensionsInfo.textContent = `${state.width} × ${state.height} PX`;
+
+      // Background controls
+      el.bgGrayscaleToggle.checked = state.bgGrayscale;
+      el.bgZoom.value = state.bgZoom;
+      el.bgZoomVal.textContent = state.bgZoom.toFixed(2) + '×';
+      el.bgOffsetX.value = state.bgOffsetX;
+      el.bgOffsetXVal.textContent = state.bgOffsetX + '%';
+      el.bgOffsetY.value = state.bgOffsetY;
+      el.bgOffsetYVal.textContent = state.bgOffsetY + '%';
+
+      el.modeCover.classList.toggle('active', state.bgSizeMode === 'cover');
+      el.modeContain.classList.toggle('active', state.bgSizeMode === 'contain');
+
+      // Tint and Canvas Solid
+      el.enableTint.checked = state.enableTint;
+      el.tintControlsWrapper.classList.toggle('hidden', !state.enableTint);
+      el.tintColor.value = state.tintColor;
+      el.tintColorHex.value = state.tintColor;
+      el.tintOpacity.value = state.tintOpacity;
+      el.tintOpacityVal.textContent = state.tintOpacity + '%';
+
+      el.canvasBgColor.value = state.canvasBgColor;
+      el.canvasBgColorHex.value = state.canvasBgColor;
+    }
+
+    /* ==========================================================================
+       On-Canvas Direct Manipulation (Drag-and-Drop Text & Pan)
+       ========================================================================== */
+    let isDraggingText = false;
+    let isPanningCanvas = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let initialLayerX = 0;
+    let initialLayerY = 0;
+    let initialBgOffsetX = 0;
+    let initialBgOffsetY = 0;
+
+    function initCanvasInteractions() {
+      const frame = el.previewFrame;
+
+      // Pointer Down on Canvas or Text
+      frame.addEventListener('pointerdown', (e) => {
+        const textBox = e.target.closest('.preview-text-box');
+
+        // Check if Spacebar is held OR Pan Background tool is active
+        if (state.isSpacePressed || state.isPanMode) {
+          isPanningCanvas = true;
+          frame.setPointerCapture(e.pointerId);
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          initialBgOffsetX = state.bgOffsetX;
+          initialBgOffsetY = state.bgOffsetY;
+          frame.style.cursor = 'grabbing';
+          e.preventDefault();
+          return;
+        }
+
+        // Direct Text Layer Dragging
+        if (textBox) {
+          const layerId = textBox.dataset.id;
+          state.activeLayerId = layerId;
+          renderLayersList();
+          syncActiveLayerControls();
+          updatePreview();
+
+          isDraggingText = true;
+          textBox.setPointerCapture(e.pointerId);
+          textBox.classList.add('dragging');
+
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          const activeLayer = getActiveLayer();
+          initialLayerX = activeLayer.textX;
+          initialLayerY = activeLayer.textY;
+
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+
+      // Pointer Move
+      window.addEventListener('pointermove', (e) => {
+        const frameRect = el.previewFrame.getBoundingClientRect();
+        if (!frameRect.width || !frameRect.height) return;
+
+        // Panning Background
+        if (isPanningCanvas) {
+          const deltaPxX = e.clientX - dragStartX;
+          const deltaPxY = e.clientY - dragStartY;
+
+          // Convert delta px to offset percentage
+          const pctDeltaX = (deltaPxX / frameRect.width) * 100;
+          const pctDeltaY = (deltaPxY / frameRect.height) * 100;
+
+          state.bgOffsetX = Math.max(-100, Math.min(100, Math.round(initialBgOffsetX + pctDeltaX)));
+          state.bgOffsetY = Math.max(-100, Math.min(100, Math.round(initialBgOffsetY + pctDeltaY)));
+
+          el.bgOffsetX.value = state.bgOffsetX;
+          el.bgOffsetXVal.textContent = state.bgOffsetX + '%';
+          el.bgOffsetY.value = state.bgOffsetY;
+          el.bgOffsetYVal.textContent = state.bgOffsetY + '%';
+
+          updatePreview();
+          return;
+        }
+
+        // Dragging Text Layer
+        if (isDraggingText) {
+          const activeLayer = getActiveLayer();
+          if (!activeLayer) return;
+
+          const deltaPxX = e.clientX - dragStartX;
+          const deltaPxY = e.clientY - dragStartY;
+
+          const pctDeltaX = (deltaPxX / frameRect.width) * 100;
+          const pctDeltaY = (deltaPxY / frameRect.height) * 100;
+
+          let rawX = initialLayerX + pctDeltaX;
+          let rawY = initialLayerY + pctDeltaY;
+
+          // Magnetic Center Snapping (threshold ~1.2%)
+          let snappedX = false;
+          let snappedY = false;
+
+          if (state.enableSnapping) {
+            if (Math.abs(rawX - 50.0) < 1.4) {
+              rawX = 50.0;
+              snappedX = true;
+            }
+            if (Math.abs(rawY - 50.0) < 1.4) {
+              rawY = 50.0;
+              snappedY = true;
+            }
+          }
+
+          // Show / Hide Center Snap Guidelines
+          el.snapGuideX.style.display = snappedX ? 'block' : 'none';
+          el.snapGuideY.style.display = snappedY ? 'block' : 'none';
+
+          // Clamp
+          activeLayer.textX = Math.round(rawX * 10) / 10;
+          activeLayer.textY = Math.round(rawY * 10) / 10;
+
+          el.textX.value = activeLayer.textX;
+          el.textXVal.textContent = activeLayer.textX.toFixed(1) + '%';
+          el.textY.value = activeLayer.textY;
+          el.textYVal.textContent = activeLayer.textY.toFixed(1) + '%';
+
+          // Fast DOM update for active layer box position
+          const activeBox = el.previewTextContainer.querySelector(`.preview-text-box[data-id="${activeLayer.id}"]`);
+          if (activeBox) {
+            activeBox.style.left = `calc(${activeLayer.textX} * 1%)`;
+            activeBox.style.top = `calc(${activeLayer.textY} * 1%)`;
+
+            const hud = activeBox.querySelector('.coords-hud');
+            if (hud) hud.textContent = `X: ${activeLayer.textX.toFixed(1)}%  Y: ${activeLayer.textY.toFixed(1)}%`;
+          }
+        }
+      });
+
+      // Pointer Up / Cancel
+      const endDrag = () => {
+        if (isDraggingText) {
+          pushHistorySnapshot();
+          isDraggingText = false;
+          el.snapGuideX.style.display = 'none';
+          el.snapGuideY.style.display = 'none';
+          document.querySelectorAll('.preview-text-box.dragging').forEach(b => b.classList.remove('dragging'));
+          updatePreview();
+        }
+        if (isPanningCanvas) {
+          pushHistorySnapshot();
+          isPanningCanvas = false;
+          el.previewFrame.style.cursor = state.isPanMode || state.isSpacePressed ? 'grab' : 'default';
+        }
+      };
+
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+
+      // Canvas Zoom on Wheel with Ctrl / Alt
+      el.previewPane.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey) {
+          e.preventDefault();
+          const currentZoom = parseInt(el.previewZoom.value);
+          const delta = e.deltaY < 0 ? 5 : -5;
+          const newZoom = Math.max(10, Math.min(100, currentZoom + delta));
+          state.zoomMode = 'manual';
+          el.previewZoom.value = newZoom;
+          el.previewZoomVal.textContent = newZoom + '%';
+          el.previewFrame.style.transform = `scale(${newZoom / 100})`;
+        }
+      }, { passive: false });
+    }
+
+    /* ==========================================================================
+       File Ingestion (Global Drag-and-Drop & Local)
+       ========================================================================== */
+    function handleImageFile(file) {
+      if (!file) return;
+      if (!file.type.match('image/.*')) {
+        showToast('Please upload a valid image (PNG, JPG, WebP)');
+        return;
+      }
+      pushHistorySnapshot();
+      state.bgImageName = file.name;
+      el.bgImageName.textContent = file.name;
+      el.bgStatusTag.textContent = 'LOADED';
+      el.bgStatusTag.className = 'tag tag-accent';
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          state.bgImage = img;
+          el.previewBgImage.src = e.target.result;
+          el.previewBgImage.classList.add('loaded');
+          el.bgAdjustmentsPanel.classList.remove('hidden');
+          updatePreview();
+          showToast(`Background image loaded: ${file.name}`);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleFontFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const arrayBuffer = e.target.result;
+        let binary = '';
+        const bytes = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64 = window.btoa(binary);
+
+        const cleanName = 'Custom_' + file.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now();
+        const fontFace = new FontFace(cleanName, arrayBuffer);
+
+        fontFace.load().then((loadedFace) => {
+          document.fonts.add(loadedFace);
+
+          const option = document.createElement('option');
+          option.value = cleanName;
+          option.textContent = `Custom: ${file.name.replace(/\.[^/.]+$/, "")}`;
+          el.textFont.appendChild(option);
+          el.textFont.value = cleanName;
+
+          state.customFonts.push({
+            name: cleanName,
+            fileName: file.name,
+            base64: base64
+          });
+
+          updateActiveLayerProp('textFontFamily', cleanName);
+          showToast(`Font registered: ${file.name}`);
+        }).catch(err => {
+          showToast(`Font load failed: ${err.message}`);
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function initGlobalFileDragAndDrop() {
+      let dragCounter = 0;
+
+      window.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+        if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+          el.globalDragOverlay.classList.add('active');
+        }
+      });
+
+      window.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter <= 0) {
+          dragCounter = 0;
+          el.globalDragOverlay.classList.remove('active');
+        }
+      });
+
+      window.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        el.globalDragOverlay.classList.remove('active');
+
+        const files = e.dataTransfer.files;
+        if (!files || files.length === 0) return;
+
+        const file = files[0];
+        const lowerName = file.name.toLowerCase();
+
+        if (lowerName.endsWith('.json')) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const data = JSON.parse(evt.target.result);
+              loadProjectData(data);
+              showToast('Project JSON successfully loaded');
+            } catch (err) {
+              showToast('Invalid JSON project: ' + err.message);
+            }
+          };
+          reader.readAsText(file);
+        } else if (lowerName.endsWith('.ttf') || lowerName.endsWith('.otf') || lowerName.endsWith('.woff2')) {
+          handleFontFile(file);
+        } else if (file.type.startsWith('image/')) {
+          handleImageFile(file);
+        } else {
+          showToast('Unsupported file type. Use JPG, PNG, JSON, or TTF/OTF.');
+        }
+      });
+    }
+
+    /* ==========================================================================
+       Canvas Scaling, Dimensions & Fit
+       ========================================================================== */
+    function updateCanvasDimensions() {
+      const pane = el.previewFrame.parentElement;
+      const paneW = pane ? pane.clientWidth : (window.innerWidth - 420);
+      const paneH = pane ? pane.clientHeight : (window.innerHeight - 56);
+
+      const maxW = Math.min(840, Math.max(120, paneW - 120));
+      const maxH = Math.max(120, paneH - 120);
+
+      const aspect = state.width / state.height;
+
+      let layoutW = maxW;
+      let layoutH = maxW / aspect;
+
+      if (layoutH > maxH) {
+        layoutH = maxH;
+        layoutW = maxH * aspect;
+      }
+
+      el.previewFrame.style.width = `${layoutW}px`;
+      el.previewFrame.style.height = `${layoutH}px`;
+
+      const scaleFactor = layoutW / state.width;
+      el.previewFrame.style.setProperty('--scale-factor', scaleFactor.toString());
+      el.currentResBadge.textContent = `${state.width} × ${state.height}`;
+      el.viewportDimensionsInfo.textContent = `${state.width} × ${state.height} PX`;
+    }
+
+    function fitPreviewToScreen() {
+      if (state.zoomMode !== 'fit') return;
+      const pane = el.previewFrame.parentElement;
+      const paneW = pane.clientWidth;
+      const paneH = pane.clientHeight;
+
+      const maxW = Math.max(100, paneW - 120);
+      const maxH = Math.max(100, paneH - 120);
+
+      const frameW = el.previewFrame.offsetWidth;
+      const frameH = el.previewFrame.offsetHeight;
+      if (!frameW || !frameH) return;
+
+      const fitScale = Math.min(maxW / frameW, maxH / frameH);
+      const zoomPercent = Math.max(10, Math.min(100, Math.floor(fitScale * 100)));
+
+      el.previewZoom.value = zoomPercent;
+      el.previewZoomVal.textContent = zoomPercent + '%';
+      el.previewFrame.style.transform = `scale(${zoomPercent / 100})`;
+    }
+
+    /* ==========================================================================
+       Render Preview Frame
+       ========================================================================== */
+    function updatePreview() {
+      const pf = el.previewFrame;
+      pf.style.backgroundColor = state.canvasBgColor;
+
+      // Background adjustments
+      pf.style.setProperty('--bg-zoom', state.bgZoom.toString());
+      pf.style.setProperty('--bg-offset-x', state.bgOffsetX.toString());
+      pf.style.setProperty('--bg-offset-y', state.bgOffsetY.toString());
+
+      if (state.bgImage) {
+        el.previewBgImage.style.objectFit = state.bgSizeMode;
+      }
+      el.previewBgImage.classList.toggle('grayscale', state.bgGrayscale);
+
+      // Tint Filter
+      if (state.enableTint) {
+        pf.style.setProperty('--tint-color', state.tintColor);
+        pf.style.setProperty('--tint-opacity', (state.tintOpacity / 100).toString());
+      } else {
+        pf.style.setProperty('--tint-opacity', '0');
+      }
+
+      // Rebuild Dynamic Text Layers
+      el.previewTextContainer.innerHTML = '';
+      const scale = parseFloat(pf.style.getPropertyValue('--scale-factor')) || 1;
+
+      state.layers.forEach(layer => {
+        const box = document.createElement('div');
+        box.className = 'preview-text-box' + (layer.id === state.activeLayerId ? ' active-layer' : '');
+        box.dataset.id = layer.id;
+
+        box.style.left = `calc(${layer.textX} * 1%)`;
+        box.style.top = `calc(${layer.textY} * 1%)`;
+
+        let tx = '-50%';
+        if (layer.textAlign === 'left') tx = '0%';
+        else if (layer.textAlign === 'right') tx = '-100%';
+        box.style.transform = `translate(${tx}, -50%)`;
+
+        box.style.textAlign = layer.textAlign;
+        box.style.fontFamily = `"${layer.textFontFamily}", "Archivo", sans-serif`;
+        box.style.fontSize = `${layer.textFontSize * scale}px`;
+        box.style.fontWeight = layer.textWeight;
+        box.style.color = layer.textColor;
+        box.style.lineHeight = layer.textLineHeight;
+        box.style.letterSpacing = `${layer.textLetterSpacing * scale}px`;
+
+        if (layer.enableBgBlock) {
+          const bg = hexToRgba(layer.bgBlockColor, layer.bgBlockOpacity / 100);
+          box.style.backgroundColor = bg;
+          box.style.padding = `${layer.bgBlockPadding * scale}px`;
+        } else {
+          box.style.backgroundColor = 'transparent';
+          box.style.padding = '0';
+        }
+
+        if (layer.enableShadow) {
+          box.style.textShadow = `
+            ${layer.shadowX * scale}px 
+            ${layer.shadowY * scale}px 
+            ${layer.shadowBlur * scale}px 
+            ${layer.shadowColor}
+          `;
+        } else {
+          box.style.textShadow = 'none';
+        }
+
+        box.textContent = layer.textContent;
+
+        // Active HUD badge showing live percentage coordinates
+        const hud = document.createElement('div');
+        hud.className = 'coords-hud tn';
+        hud.textContent = `X: ${layer.textX.toFixed(1)}%  Y: ${layer.textY.toFixed(1)}%`;
+        box.appendChild(hud);
+
+        el.previewTextContainer.appendChild(box);
+      });
+    }
+
+    /* ==========================================================================
+       Project JSON Serialization (Save & Load)
+       ========================================================================== */
+    function saveProjectData() {
+      const projectData = {
+        app: 'digital-signage-generator',
+        framework: 'CueSmith-Modernist',
+        version: '2.0',
+        preset: state.preset,
+        width: state.width,
+        height: state.height,
+
+        bgImageName: state.bgImageName,
+        bgSizeMode: state.bgSizeMode,
+        bgZoom: state.bgZoom,
+        bgOffsetX: state.bgOffsetX,
+        bgOffsetY: state.bgOffsetY,
+        bgGrayscale: state.bgGrayscale,
+
+        canvasBgColor: state.canvasBgColor,
+        enableTint: state.enableTint,
+        tintColor: state.tintColor,
+        tintOpacity: state.tintOpacity,
+
+        layers: state.layers,
+        customFonts: state.customFonts
+      };
+
+      const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `cuesmith-signage-${state.preset}-${Date.now()}.json`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast('Project JSON exported');
+    }
+
+    function loadProjectData(projectData) {
+      if (projectData.app !== 'digital-signage-generator') {
+        showToast('Invalid Signage project file');
+        return;
+      }
+      pushHistorySnapshot();
+
+      state.preset = projectData.preset || 'landscape';
+      state.width = projectData.width || 1920;
+      state.height = projectData.height || 1080;
+
+      state.bgImageName = projectData.bgImageName || '';
+      state.bgSizeMode = projectData.bgSizeMode || 'cover';
+      state.bgZoom = projectData.bgZoom || 1.0;
+      state.bgOffsetX = projectData.bgOffsetX || 0;
+      state.bgOffsetY = projectData.bgOffsetY || 0;
+      state.bgGrayscale = !!projectData.bgGrayscale;
+
+      state.canvasBgColor = projectData.canvasBgColor || '#0b0f19';
+      state.enableTint = projectData.enableTint !== undefined ? projectData.enableTint : false;
+      state.tintColor = projectData.tintColor || '#000000';
+      state.tintOpacity = projectData.tintOpacity !== undefined ? projectData.tintOpacity : 40;
+
+      state.layers = projectData.layers && projectData.layers.length > 0 ? projectData.layers : [
+        {
+          id: 'layer_1',
+          textContent: 'CUESMITH DIGITAL SIGNAGE',
+          textFontFamily: 'Archivo',
+          textWeight: '800',
+          textAlign: 'center',
+          textX: 50.0,
+          textY: 45.0,
+          textFontSize: 70,
+          textLineHeight: 1.2,
+          textLetterSpacing: 1.5,
+          textColor: '#ffffff',
+          enableShadow: false,
+          shadowColor: '#000000',
+          shadowBlur: 15,
+          shadowX: 3,
+          shadowY: 3,
+          enableBgBlock: false,
+          bgBlockColor: '#000000',
+          bgBlockOpacity: 60,
+          bgBlockPadding: 20,
+          bgBlockRadius: 0
+        }
+      ];
+      state.activeLayerId = state.layers[0].id;
+
+      // Custom fonts restoring
+      state.customFonts = projectData.customFonts || [];
+      state.customFonts.forEach(font => {
+        try {
+          const binaryString = window.atob(font.base64);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const fontFace = new FontFace(font.name, bytes.buffer);
+          fontFace.load().then(loaded => {
+            document.fonts.add(loaded);
+            const exists = Array.from(el.textFont.options).some(o => o.value === font.name);
+            if (!exists) {
+              const option = document.createElement('option');
+              option.value = font.name;
+              option.textContent = `Custom: ${font.fileName.replace(/\.[^/.]+$/, "")}`;
+              el.textFont.appendChild(option);
+            }
+          });
+        } catch (e) {
+          console.error("Font restoration failed", e);
+        }
+      });
+
+      // Background notification
+      if (state.bgImageName) {
+        el.bgImageName.textContent = state.bgImageName;
+        el.bgStatusTag.textContent = 'NEEDS FILE';
+        el.bgStatusTag.className = 'tag tag-accent';
+        showToast(`Project requires background: ${state.bgImageName}`);
+      } else {
+        el.bgImageName.textContent = 'No file selected';
+        el.bgStatusTag.textContent = 'EMPTY';
+        el.bgStatusTag.className = 'tag tag-neutral';
+      }
+
+      syncAllUIControls();
+      updateCanvasDimensions();
+      fitPreviewToScreen();
+      updatePreview();
+    }
+
+    /* ==========================================================================
+       High Resolution Production PNG Export
+       ========================================================================== */
+    function getCanvasWrappedLines(ctx, text, maxWidth) {
+      const rawLines = text.split('\n');
+      const wrappedLines = [];
+      for (const rawLine of rawLines) {
+        const words = rawLine.split(' ');
+        let currentLine = '';
+        for (const word of words) {
+          const testLine = currentLine ? currentLine + ' ' + word : word;
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && currentLine) {
+            wrappedLines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        wrappedLines.push(currentLine);
+      }
+      return wrappedLines;
+    }
+
+    function exportPNG() {
+      showToast(`Rendering ${state.width} × ${state.height} PNG...`, 2000);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = state.width;
+      canvas.height = state.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Base solid color
+      ctx.fillStyle = state.canvasBgColor;
+      ctx.fillRect(0, 0, state.width, state.height);
+
+      // Background image rendering
+      if (state.bgImage) {
+        const containerRatio = state.width / state.height;
+        const imgRatio = state.bgImage.width / state.bgImage.height;
+        let baseW = state.width;
+        let baseH = state.height;
+
+        if (state.bgSizeMode === 'cover') {
+          if (imgRatio > containerRatio) {
+            baseH = state.height;
+            baseW = state.height * imgRatio;
+          } else {
+            baseW = state.width;
+            baseH = state.width / imgRatio;
+          }
+        } else {
+          if (imgRatio > containerRatio) {
+            baseW = state.width;
+            baseH = state.width / imgRatio;
+          } else {
+            baseH = state.height;
+            baseW = state.height * imgRatio;
+          }
+        }
+
+        ctx.save();
+        if (state.bgGrayscale) {
+          ctx.filter = 'grayscale(1) contrast(1.08)';
+        }
+        ctx.translate(state.width / 2, state.height / 2);
+        const tx = (state.bgOffsetX / 100) * state.width;
+        const ty = (state.bgOffsetY / 100) * state.height;
+        ctx.translate(tx, ty);
+        ctx.scale(state.bgZoom, state.bgZoom);
+        ctx.drawImage(state.bgImage, -baseW / 2, -baseH / 2, baseW, baseH);
+        ctx.restore();
+      }
+
+      // Tint overlay
+      if (state.enableTint && state.tintOpacity > 0) {
+        ctx.save();
+        ctx.fillStyle = hexToRgba(state.tintColor, state.tintOpacity / 100);
+        ctx.fillRect(0, 0, state.width, state.height);
+        ctx.restore();
+      }
+
+      // Render Text Layers
+      state.layers.forEach(layer => {
+        ctx.save();
+        const fontSize = layer.textFontSize;
+        ctx.font = `${layer.textWeight} ${fontSize}px "${layer.textFontFamily}", "Archivo", sans-serif`;
+        ctx.textAlign = layer.textAlign;
+        ctx.textBaseline = 'top';
+
+        if ('letterSpacing' in ctx) {
+          ctx.letterSpacing = layer.textLetterSpacing + 'px';
+        }
+
+        const maxBoxWidth = 0.85 * state.width;
+        const lines = getCanvasWrappedLines(ctx, layer.textContent, maxBoxWidth);
+        const lineGap = layer.textLineHeight * fontSize;
+        const totalTextHeight = (lines.length - 1) * lineGap + fontSize;
+
+        let maxLineWidth = 0;
+        for (const line of lines) {
+          const w = ctx.measureText(line).width;
+          if (w > maxLineWidth) maxLineWidth = w;
+        }
+
+        const tx = (layer.textX / 100) * state.width;
+        const ty = (layer.textY / 100) * state.height;
+        const pad = layer.enableBgBlock ? layer.bgBlockPadding : 0;
+
+        const W_box = maxLineWidth + 2 * pad;
+        const H_box = totalTextHeight + 2 * pad;
+
+        let X_box = tx - W_box / 2;
+        if (layer.textAlign === 'left') X_box = tx - pad;
+        else if (layer.textAlign === 'right') X_box = tx - W_box + pad;
+        const Y_box = ty - H_box / 2;
+
+        // Backing Plate Box
+        if (layer.enableBgBlock) {
+          ctx.fillStyle = hexToRgba(layer.bgBlockColor, layer.bgBlockOpacity / 100);
+          ctx.fillRect(X_box, Y_box, W_box, H_box);
+        }
+
+        // Shadows
+        if (layer.enableShadow) {
+          ctx.shadowColor = layer.shadowColor;
+          ctx.shadowBlur = layer.shadowBlur;
+          ctx.shadowOffsetX = layer.shadowX;
+          ctx.shadowOffsetY = layer.shadowY;
+        }
+
+        // Draw Lines
+        ctx.fillStyle = layer.textColor;
+        const startY = ty - totalTextHeight / 2;
+        for (let i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], tx, startY + (i * lineGap));
+        }
+
+        ctx.restore();
+      });
+
+      // Trigger download
+      const dataURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const cleanName = (state.bgImageName ? state.bgImageName.replace(/\.[^/.]+$/, "") : 'graphic')
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '-');
+
+      link.download = `cuesmith-${state.preset}-${cleanName}-${Date.now()}.png`;
+      link.href = dataURL;
+      link.click();
+      showToast('PNG successfully downloaded');
+    }
+
+    /* ==========================================================================
+       Setup DOM Event Handlers & Initialization
+       ========================================================================== */
+    function setupEventHandlers() {
+      // Theme Toggle (Daylight / Backstage Dark)
+      el.themeToggleBtn.addEventListener('click', () => {
+        if (state.theme === 'daylight') {
+          state.theme = 'backstage';
+          document.documentElement.setAttribute('data-theme', 'backstage');
+          el.themeBtnLabel.textContent = 'Daylight';
+          showToast('Theme switched to Backstage (Dark)');
+        } else {
+          state.theme = 'daylight';
+          document.documentElement.setAttribute('data-theme', 'daylight');
+          el.themeBtnLabel.textContent = 'Backstage';
+          showToast('Theme switched to Daylight (Light)');
+        }
+      });
+
+      // Dialog triggers
+      el.shortcutsBtn.addEventListener('click', () => el.shortcutsDialog.classList.add('open'));
+      el.closeDialogBtn.addEventListener('click', () => el.shortcutsDialog.classList.remove('open'));
+      el.confirmDialogBtn.addEventListener('click', () => el.shortcutsDialog.classList.remove('open'));
+      el.shortcutsDialog.addEventListener('click', (e) => {
+        if (e.target === el.shortcutsDialog) el.shortcutsDialog.classList.remove('open');
+      });
+
+      // Screen Format Tabs
       el.presetTabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('.tab-btn');
+        const btn = e.target.closest('.seg-opt');
         if (!btn) return;
-        
-        el.presetTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        pushHistorySnapshot();
+
+        el.presetTabs.querySelectorAll('.seg-opt').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
+
         state.preset = btn.dataset.preset;
         if (state.preset === 'custom') {
           el.customSizeControls.classList.remove('hidden');
-          state.width = parseInt(el.customW.value);
-          state.height = parseInt(el.customH.value);
+          state.width = parseInt(el.customW.value) || 1920;
+          state.height = parseInt(el.customH.value) || 1080;
         } else {
           el.customSizeControls.classList.add('hidden');
           state.width = PRESETS[state.preset].width;
           state.height = PRESETS[state.preset].height;
         }
-        
+
         state.zoomMode = 'fit';
         updateCanvasDimensions();
         fitPreviewToScreen();
+        updatePreview();
       });
 
-      const onCustomSizeChange = () => {
+      const onCustomSize = () => {
         if (state.preset === 'custom') {
           state.width = Math.max(100, Math.min(8000, parseInt(el.customW.value) || 1920));
           state.height = Math.max(100, Math.min(8000, parseInt(el.customH.value) || 1080));
-          
           state.zoomMode = 'fit';
           updateCanvasDimensions();
           fitPreviewToScreen();
+          updatePreview();
         }
       };
-      el.customW.addEventListener('input', onCustomSizeChange);
-      el.customH.addEventListener('input', onCustomSizeChange);
+      el.customW.addEventListener('input', onCustomSize);
+      el.customH.addEventListener('input', onCustomSize);
 
-      // 2. Background File uploader
-      const handleBgFile = (file) => {
-        if (!file) return;
-        if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
-          alert('Unsupported file format. Use a JPEG or PNG background image.');
-          return;
-        }
-        
-        state.bgImageName = file.name;
-        el.bgImageName.textContent = file.name;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            state.bgImage = img;
-            el.previewBgImage.src = e.target.result;
-            el.previewBgImage.classList.add('loaded');
-            el.bgAdjustmentsPanel.classList.remove('hidden');
-            
-            // Restore default text in drag box
-            document.querySelector('#bg-upload-zone p').textContent = 'Drag background image here';
-            document.querySelector('#bg-upload-zone span').textContent = 'or click to browse local files';
-            
-            updatePreview();
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      };
-
-      el.bgImageInput.addEventListener('change', (e) => handleBgFile(e.target.files[0]));
-      
-      el.bgUploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        el.bgUploadZone.classList.add('dragging');
-      });
-      
-      el.bgUploadZone.addEventListener('dragleave', () => {
-        el.bgUploadZone.classList.remove('dragging');
-      });
-      
-      el.bgUploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        el.bgUploadZone.classList.remove('dragging');
-        handleBgFile(e.dataTransfer.files[0]);
-      });
+      // Background Upload & Adjustments
+      el.bgImageInput.addEventListener('change', (e) => handleImageFile(e.target.files[0]));
 
       el.removeImageBtn.addEventListener('click', () => {
+        pushHistorySnapshot();
         state.bgImage = null;
         state.bgImageName = '';
         el.previewBgImage.src = '';
         el.previewBgImage.classList.remove('loaded');
         el.bgAdjustmentsPanel.classList.add('hidden');
         el.bgImageInput.value = '';
-        
-        document.querySelector('#bg-upload-zone p').textContent = 'Drag background image here';
-        document.querySelector('#bg-upload-zone span').textContent = 'or click to browse local files';
-        
+        el.bgStatusTag.textContent = 'EMPTY';
+        el.bgStatusTag.className = 'tag tag-neutral';
         updatePreview();
+        showToast('Background removed');
       });
 
-      // Background position adjustments
       el.modeCover.addEventListener('click', () => {
         state.bgSizeMode = 'cover';
         el.modeCover.classList.add('active');
         el.modeContain.classList.remove('active');
         updatePreview();
       });
+
       el.modeContain.addEventListener('click', () => {
         state.bgSizeMode = 'contain';
         el.modeContain.classList.add('active');
         el.modeCover.classList.remove('active');
+        updatePreview();
+      });
+
+      el.bgGrayscaleToggle.addEventListener('change', (e) => {
+        state.bgGrayscale = e.target.checked;
         updatePreview();
       });
 
@@ -2019,153 +3282,156 @@
         });
       };
 
-      bindSlider(el.bgZoom, el.bgZoomVal, 'bgZoom', false, 'x');
+      bindSlider(el.bgZoom, el.bgZoomVal, 'bgZoom', false, '×');
       bindSlider(el.bgOffsetX, el.bgOffsetXVal, 'bgOffsetX', false, '%');
       bindSlider(el.bgOffsetY, el.bgOffsetYVal, 'bgOffsetY', false, '%');
 
       el.resetBgBtn.addEventListener('click', () => {
+        pushHistorySnapshot();
         state.bgZoom = 1.0;
         state.bgOffsetX = 0;
         state.bgOffsetY = 0;
         el.bgZoom.value = 1.0;
-        el.bgZoomVal.textContent = '1.0x';
+        el.bgZoomVal.textContent = '1.00×';
         el.bgOffsetX.value = 0;
         el.bgOffsetXVal.textContent = '0%';
         el.bgOffsetY.value = 0;
         el.bgOffsetYVal.textContent = '0%';
         updatePreview();
+        showToast('Background layout reset');
       });
 
-      // 3. Text Layers Manager Add Button
-      el.addLayerBtn.addEventListener('click', addTextLayer);
+      el.panBgToolBtn.addEventListener('click', () => {
+        state.isPanMode = !state.isPanMode;
+        el.toolPanBtn.classList.toggle('active', state.isPanMode);
+        el.panBgToolBtn.classList.toggle('btn-primary', state.isPanMode);
+        el.panBgToolBtn.classList.toggle('btn-secondary', !state.isPanMode);
+        el.previewFrame.style.cursor = state.isPanMode ? 'grab' : 'default';
+        showToast(state.isPanMode ? 'Pan background mode enabled (drag canvas)' : 'Pan mode disabled');
+      });
 
-      // 4. Formatting inputs mapped to active layer properties
+      // Layers Manager Buttons
+      el.addLayerBtn.addEventListener('click', addTextLayer);
+      el.duplicateLayerBtn.addEventListener('click', duplicateActiveLayer);
+
+      // Selected Layer Inputs
       el.textContent.addEventListener('input', (e) => {
         updateActiveLayerProp('textContent', e.target.value);
       });
 
-      el.textFont.addEventListener('change', async (e) => {
-        const selectedFont = e.target.value;
-        if (!selectedFont.startsWith('Custom_')) {
-          const curatedGoogle = ['Outfit', 'Inter', 'Montserrat', 'Playfair Display', 'Space Grotesk'];
-          if (curatedGoogle.includes(selectedFont)) {
-            await loadGoogleFont(selectedFont);
-          }
-        }
-        updateActiveLayerProp('textFontFamily', selectedFont);
+      el.textFont.addEventListener('change', (e) => {
+        updateActiveLayerProp('textFontFamily', e.target.value);
       });
 
       el.fontFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const arrayBuffer = e.target.result;
-          const base64 = arrayBufferToBase64(arrayBuffer);
-          const cleanName = 'Custom_' + file.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now();
-          const fontFace = new FontFace(cleanName, arrayBuffer);
-          
-          fontFace.load().then((loadedFace) => {
-            document.fonts.add(loadedFace);
-            
-            const option = document.createElement('option');
-            option.value = cleanName;
-            option.textContent = `Custom: ${file.name.replace(/\.[^/.]+$/, "")}`;
-            el.textFont.appendChild(option);
-            el.textFont.value = cleanName;
-            
-            state.customFonts.push({
-              name: cleanName,
-              fileName: file.name,
-              base64: base64
-            });
-            
-            updateActiveLayerProp('textFontFamily', cleanName);
-          }).catch((err) => {
-            alert("Verify it is a valid TTF/OTF font file. Error: " + err.message);
-          });
-        };
-        reader.readAsArrayBuffer(file);
+        if (e.target.files && e.target.files[0]) {
+          handleFontFile(e.target.files[0]);
+        }
       });
 
-      // Alignment actions
       el.alignToggles.addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-toggle');
+        const btn = e.target.closest('.seg-opt');
         if (!btn) return;
-        el.alignToggles.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
+        el.alignToggles.querySelectorAll('.seg-opt').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         updateActiveLayerProp('textAlign', btn.dataset.align);
       });
 
       bindSlider(el.textX, el.textXVal, 'textX', true, '%');
       bindSlider(el.textY, el.textYVal, 'textY', true, '%');
+
+      el.centerXBtn.addEventListener('click', () => {
+        pushHistorySnapshot();
+        updateActiveLayerProp('textX', 50.0);
+        el.textX.value = 50.0;
+        el.textXVal.textContent = '50.0%';
+      });
+
+      el.centerYBtn.addEventListener('click', () => {
+        pushHistorySnapshot();
+        updateActiveLayerProp('textY', 50.0);
+        el.textY.value = 50.0;
+        el.textYVal.textContent = '50.0%';
+      });
+
       bindSlider(el.textFontSize, el.textFontSizeVal, 'textFontSize', true, 'px');
+      el.textWeight.addEventListener('change', (e) => updateActiveLayerProp('textWeight', e.target.value));
       bindSlider(el.textLineHeight, el.textLineHeightVal, 'textLineHeight', true);
       bindSlider(el.textLetterSpacing, el.textLetterSpacingVal, 'textLetterSpacing', true, 'px');
 
-      el.textWeight.addEventListener('change', (e) => {
-        updateActiveLayerProp('textWeight', e.target.value);
+      syncColorControls(el.textColor, el.textColorHex, val => updateActiveLayerProp('textColor', val));
+
+      // Collapsible Effects Toggle
+      el.collapsibleTriggerEffects.addEventListener('click', () => {
+        el.collapsibleBodyEffects.classList.toggle('hidden');
+        el.chevronEffects.style.transform = el.collapsibleBodyEffects.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
       });
 
-      // Per-layer readability toggles
+      // Shadow
       el.enableShadow.addEventListener('change', (e) => {
         updateActiveLayerProp('enableShadow', e.target.checked);
-        if (e.target.checked) {
-          el.shadowControlsWrapper.classList.remove('hidden');
-        } else {
-          el.shadowControlsWrapper.classList.add('hidden');
-        }
+        el.shadowControlsWrapper.classList.toggle('hidden', !e.target.checked);
       });
+      syncColorControls(el.shadowColor, el.shadowColorHex, val => updateActiveLayerProp('shadowColor', val));
       bindSlider(el.shadowBlur, el.shadowBlurVal, 'shadowBlur', true, 'px');
-      
-      const onShadowOffsetChange = () => {
-        updateActiveLayerProp('shadowX', parseInt(el.shadowX.value) || 0);
-        updateActiveLayerProp('shadowY', parseInt(el.shadowY.value) || 0);
-      };
-      el.shadowX.addEventListener('input', onShadowOffsetChange);
-      el.shadowY.addEventListener('input', onShadowOffsetChange);
+      el.shadowX.addEventListener('input', (e) => updateActiveLayerProp('shadowX', parseInt(e.target.value) || 0));
+      el.shadowY.addEventListener('input', (e) => updateActiveLayerProp('shadowY', parseInt(e.target.value) || 0));
 
+      // Backplate Box
       el.enableBgBlock.addEventListener('change', (e) => {
         updateActiveLayerProp('enableBgBlock', e.target.checked);
-        if (e.target.checked) {
-          el.bgBlockControlsWrapper.classList.remove('hidden');
-        } else {
-          el.bgBlockControlsWrapper.classList.add('hidden');
-        }
+        el.bgBlockControlsWrapper.classList.toggle('hidden', !e.target.checked);
       });
+      syncColorControls(el.bgBlockColor, el.bgBlockColorHex, val => updateActiveLayerProp('bgBlockColor', val));
       bindSlider(el.bgBlockOpacity, el.bgBlockOpacityVal, 'bgBlockOpacity', true, '%');
       bindSlider(el.bgBlockPadding, el.bgBlockPaddingVal, 'bgBlockPadding', true, 'px');
-      bindSlider(el.bgBlockRadius, el.bgBlockRadiusVal, 'bgBlockRadius', true, 'px');
 
-      // 5. Global visual events
+      // Global Canvas Settings
       el.enableTint.addEventListener('change', (e) => {
         state.enableTint = e.target.checked;
-        if (state.enableTint) {
-          el.tintControlsWrapper.classList.remove('hidden');
-        } else {
-          el.tintControlsWrapper.classList.add('hidden');
-        }
+        el.tintControlsWrapper.classList.toggle('hidden', !state.enableTint);
         updatePreview();
       });
+      syncColorControls(el.tintColor, el.tintColorHex, val => { state.tintColor = val; updatePreview(); });
       bindSlider(el.tintOpacity, el.tintOpacityVal, 'tintOpacity', false, '%');
+      syncColorControls(el.canvasBgColor, el.canvasBgColorHex, val => { state.canvasBgColor = val; updatePreview(); });
 
-      el.toggleGrid.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          el.previewFrame.style.setProperty('--checker-color-1', '#0f172a');
-          el.previewFrame.style.setProperty('--checker-color-2', '#1e293b');
-        } else {
-          el.previewFrame.style.setProperty('--checker-color-1', 'transparent');
-          el.previewFrame.style.setProperty('--checker-color-2', 'transparent');
-        }
+      // Quick Floating Toolbar
+      el.toolSelectBtn.addEventListener('click', () => {
+        state.isPanMode = false;
+        el.toolSelectBtn.classList.add('active');
+        el.toolPanBtn.classList.remove('active');
+        el.panBgToolBtn.classList.remove('btn-primary');
+        el.panBgToolBtn.classList.add('btn-secondary');
+        el.previewFrame.style.cursor = 'default';
       });
 
-      el.previewZoom.addEventListener('input', (e) => {
-        state.zoomMode = 'manual';
-        updateZoomUI();
-        const val = parseInt(e.target.value);
-        el.previewZoomVal.textContent = val + '%';
-        el.previewFrame.style.transform = `scale(${val / 100})`;
+      el.toolPanBtn.addEventListener('click', () => {
+        state.isPanMode = !state.isPanMode;
+        el.toolPanBtn.classList.toggle('active', state.isPanMode);
+        el.toolSelectBtn.classList.toggle('active', !state.isPanMode);
+        el.panBgToolBtn.classList.toggle('btn-primary', state.isPanMode);
+        el.panBgToolBtn.classList.toggle('btn-secondary', !state.isPanMode);
+        el.previewFrame.style.cursor = state.isPanMode ? 'grab' : 'default';
+        showToast(state.isPanMode ? 'Pan background mode enabled' : 'Select mode enabled');
+      });
+
+      el.toolSnapBtn.addEventListener('click', () => {
+        state.enableSnapping = !state.enableSnapping;
+        el.toolSnapBtn.classList.toggle('active', state.enableSnapping);
+        showToast(state.enableSnapping ? 'Magnetic snapping guidelines ON' : 'Magnetic snapping OFF');
+      });
+
+      el.quickCenterX.addEventListener('click', () => el.centerXBtn.click());
+      el.quickCenterY.addEventListener('click', () => el.centerYBtn.click());
+      el.quickDeleteLayer.addEventListener('click', () => {
+        const active = getActiveLayer();
+        if (active) deleteTextLayer(active.id);
+      });
+
+      // Viewport Status Bar
+      el.toggleGrid.addEventListener('change', (e) => {
+        el.previewFrame.classList.toggle('checkerboard', e.target.checked);
       });
 
       el.zoomFitBtn.addEventListener('click', () => {
@@ -2173,516 +3439,143 @@
         fitPreviewToScreen();
       });
 
-      // JSON save & load buttons
-      el.saveBtn.addEventListener('click', saveProject);
+      el.previewZoom.addEventListener('input', (e) => {
+        state.zoomMode = 'manual';
+        const val = parseInt(e.target.value);
+        el.previewZoomVal.textContent = val + '%';
+        el.previewFrame.style.transform = `scale(${val / 100})`;
+      });
+
+      // Save, Load, Export
+      el.saveBtn.addEventListener('click', saveProjectData);
       el.loadBtn.addEventListener('click', () => el.loadProjectInput.click());
       el.loadProjectInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
         const reader = new FileReader();
         reader.onload = (evt) => {
           try {
             const data = JSON.parse(evt.target.result);
-            loadProject(data);
-          } catch(err) {
-            alert("Invalid project file structure: " + err.message);
+            loadProjectData(data);
+            showToast('Project loaded');
+          } catch (err) {
+            showToast('Invalid JSON: ' + err.message);
           }
         };
         reader.readAsText(file);
-        el.loadProjectInput.value = ''; // clear input
+        el.loadProjectInput.value = '';
       });
 
       el.exportBtn.addEventListener('click', exportPNG);
 
+      // Keyboard Ergonomics
+      window.addEventListener('keydown', (e) => {
+        const activeEl = document.activeElement;
+        const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+
+        // Help Modal (?)
+        if (e.key === '?' && !isTyping) {
+          e.preventDefault();
+          el.shortcutsDialog.classList.toggle('open');
+          return;
+        }
+
+        // Escape closes modal / deselects
+        if (e.key === 'Escape') {
+          el.shortcutsDialog.classList.remove('open');
+          return;
+        }
+
+        // Spacebar Panning toggle
+        if (e.code === 'Space' && !isTyping && !state.isSpacePressed) {
+          state.isSpacePressed = true;
+          el.previewFrame.style.cursor = 'grab';
+          e.preventDefault();
+        }
+
+        // Undo (Cmd+Z or Ctrl+Z)
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+          if (!isTyping) {
+            e.preventDefault();
+            undoLastAction();
+          }
+        }
+
+        // Duplicate (Cmd+D or Ctrl+D)
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd') {
+          e.preventDefault();
+          duplicateActiveLayer();
+        }
+
+        // Toggle Snap (S key)
+        if (e.key.toLowerCase() === 's' && !isTyping && !e.metaKey && !e.ctrlKey) {
+          el.toolSnapBtn.click();
+        }
+
+        // Delete Layer (Delete or Backspace when not typing)
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping) {
+          e.preventDefault();
+          const active = getActiveLayer();
+          if (active) deleteTextLayer(active.id);
+        }
+
+        // Arrow Key Nudging for Active Layer
+        if (!isTyping && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          const active = getActiveLayer();
+          if (!active) return;
+          e.preventDefault();
+
+          const step = e.shiftKey ? 5.0 : (e.altKey ? 0.1 : 0.5);
+
+          if (e.key === 'ArrowUp') active.textY = Math.max(0, active.textY - step);
+          if (e.key === 'ArrowDown') active.textY = Math.min(100, active.textY + step);
+          if (e.key === 'ArrowLeft') active.textX = Math.max(0, active.textX - step);
+          if (e.key === 'ArrowRight') active.textX = Math.min(100, active.textX + step);
+
+          active.textX = Math.round(active.textX * 10) / 10;
+          active.textY = Math.round(active.textY * 10) / 10;
+
+          el.textX.value = active.textX;
+          el.textXVal.textContent = active.textX.toFixed(1) + '%';
+          el.textY.value = active.textY;
+          el.textYVal.textContent = active.textY.toFixed(1) + '%';
+
+          updatePreview();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') {
+          state.isSpacePressed = false;
+          el.previewFrame.style.cursor = state.isPanMode ? 'grab' : 'default';
+        }
+      });
+
+      // Window Resizing
       const resizeObserver = new ResizeObserver(() => {
         updateCanvasDimensions();
         if (state.zoomMode === 'fit') {
           fitPreviewToScreen();
         }
       });
-      resizeObserver.observe(el.previewFrame.parentElement);
+      resizeObserver.observe(el.previewPane);
+    }
 
-      // Trigger initial loaders
+    /* ==========================================================================
+       Initialization
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      setupEventHandlers();
+      initCanvasInteractions();
+      initGlobalFileDragAndDrop();
+
       renderLayersList();
       syncActiveLayerControls();
-      state.zoomMode = 'fit';
       updateCanvasDimensions();
       fitPreviewToScreen();
-    }
-
-    function updateCanvasDimensions() {
-      const pane = el.previewFrame.parentElement;
-      const paneW = pane ? pane.clientWidth : (window.innerWidth - 390);
-      const paneH = pane ? pane.clientHeight : (window.innerHeight - 70);
-      
-      const maxW = Math.min(800, Math.max(100, paneW - 96));
-      const maxH = Math.max(100, paneH - 96);
-      
-      const aspect = state.width / state.height;
-      
-      let layoutW = maxW;
-      let layoutH = maxW / aspect;
-      
-      if (layoutH > maxH) {
-        layoutH = maxH;
-        layoutW = maxH * aspect;
-      }
-      
-      el.previewFrame.style.width = `${layoutW}px`;
-      el.previewFrame.style.height = `${layoutH}px`;
-      
-      updateScaleFactor();
-    }
-
-    function updateScaleFactor() {
-      const visualWidth = el.previewFrame.clientWidth;
-      const scaleFactor = visualWidth / state.width;
-      el.previewFrame.style.setProperty('--scale-factor', scaleFactor.toString());
       updatePreview();
-    }
 
-    // Render active preview including multi-text boxes
-    function updatePreview() {
-      const pf = el.previewFrame;
-      pf.style.backgroundColor = state.canvasBgColor;
-
-      // Background offsets
-      pf.style.setProperty('--bg-zoom', state.bgZoom.toString());
-      pf.style.setProperty('--bg-offset-x', state.bgOffsetX.toString());
-      pf.style.setProperty('--bg-offset-y', state.bgOffsetY.toString());
-      if (state.bgImage) {
-        el.previewBgImage.style.objectFit = state.bgSizeMode;
-      }
-
-      // Canvas tint filter
-      if (state.enableTint) {
-        pf.style.setProperty('--tint-color', state.tintColor);
-        pf.style.setProperty('--tint-opacity', (state.tintOpacity / 100).toString());
-      } else {
-        pf.style.setProperty('--tint-opacity', '0');
-      }
-
-      // Clear layers and rebuild dynamically
-      el.previewTextContainer.innerHTML = '';
-      const scale = parseFloat(pf.style.getPropertyValue('--scale-factor')) || 1;
-
-      state.layers.forEach(layer => {
-        const box = document.createElement('div');
-        box.className = 'preview-text-box';
-        if (layer.id === state.activeLayerId) {
-          box.classList.add('active-layer');
-        }
-        
-        box.style.left = `calc(${layer.textX} * 1%)`;
-        box.style.top = `calc(${layer.textY} * 1%)`;
-        
-        // Align-based positioning transform
-        let tx = '-50%';
-        if (layer.textAlign === 'left') {
-          tx = '0%';
-        } else if (layer.textAlign === 'right') {
-          tx = '-100%';
-        }
-        box.style.transform = `translate(${tx}, -50%)`;
-        
-        box.style.textAlign = layer.textAlign;
-        box.style.fontFamily = `"${layer.textFontFamily}", sans-serif`;
-        box.style.fontSize = `${layer.textFontSize * scale}px`;
-        box.style.fontWeight = layer.textWeight;
-        box.style.color = layer.textColor;
-        box.style.lineHeight = layer.textLineHeight;
-        box.style.letterSpacing = `${layer.textLetterSpacing * scale}px`;
-        
-        if (layer.enableBgBlock) {
-          const bg = hexToRgba(layer.bgBlockColor, layer.bgBlockOpacity / 100);
-          box.style.backgroundColor = bg;
-          box.style.padding = `${layer.bgBlockPadding * scale}px`;
-          box.style.borderRadius = `${layer.bgBlockRadius * scale}px`;
-        } else {
-          box.style.backgroundColor = 'transparent';
-          box.style.padding = '0';
-          box.style.borderRadius = '0';
-        }
-        
-        if (layer.enableShadow) {
-          box.style.textShadow = `
-            ${layer.shadowX * scale}px 
-            ${layer.shadowY * scale}px 
-            ${layer.shadowBlur * scale}px 
-            ${layer.shadowColor}
-          `;
-        } else {
-          box.style.textShadow = 'none';
-        }
-        
-        box.textContent = layer.textContent;
-        el.previewTextContainer.appendChild(box);
-      });
-    }
-
-    // Text wrapping engine for canvas lines
-    function getWrappedLines(ctx, text, maxWidth) {
-      const rawLines = text.split('\n');
-      const wrappedLines = [];
-      
-      for (const rawLine of rawLines) {
-        const words = rawLine.split(' ');
-        let currentLine = '';
-        
-        for (const word of words) {
-          const testLine = currentLine ? currentLine + ' ' + word : word;
-          const metrics = ctx.measureText(testLine);
-          
-          if (metrics.width > maxWidth && currentLine) {
-            wrappedLines.push(currentLine);
-            currentLine = word;
-          } else {
-            currentLine = testLine;
-          }
-        }
-        wrappedLines.push(currentLine);
-      }
-      
-      return wrappedLines;
-    }
-
-    function drawRoundedRect(ctx, x, y, width, height, radius) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-    }
-
-    // Save project state to lightweight JSON config
-    function saveProject() {
-      const projectData = {
-        app: 'digital-signage-generator',
-        version: '1.0',
-        preset: state.preset,
-        width: state.width,
-        height: state.height,
-        
-        bgImageName: state.bgImageName,
-        bgSizeMode: state.bgSizeMode,
-        bgZoom: state.bgZoom,
-        bgOffsetX: state.bgOffsetX,
-        bgOffsetY: state.bgOffsetY,
-        
-        canvasBgColor: state.canvasBgColor,
-        enableTint: state.enableTint,
-        tintColor: state.tintColor,
-        tintOpacity: state.tintOpacity,
-        
-        layers: state.layers,
-        customFonts: state.customFonts
-      };
-      
-      const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.download = `signage-project-${state.preset}-${Date.now()}.json`;
-      link.href = url;
-      link.click();
-      
-      URL.revokeObjectURL(url);
-    }
-
-    // Load project state from JSON
-    function loadProject(projectData) {
-      try {
-        if (projectData.app !== 'digital-signage-generator') {
-          alert("Selected file is not a valid Signage Project JSON.");
-          return;
-        }
-        
-        state.preset = projectData.preset;
-        state.width = projectData.width;
-        state.height = projectData.height;
-        
-        state.bgImageName = projectData.bgImageName || '';
-        state.bgSizeMode = projectData.bgSizeMode || 'cover';
-        state.bgZoom = projectData.bgZoom || 1.0;
-        state.bgOffsetX = projectData.bgOffsetX || 0;
-        state.bgOffsetY = projectData.bgOffsetY || 0;
-        
-        state.canvasBgColor = projectData.canvasBgColor || '#0b0f19';
-        state.enableTint = projectData.enableTint !== undefined ? projectData.enableTint : true;
-        state.tintColor = projectData.tintColor || '#000000';
-        state.tintOpacity = projectData.tintOpacity !== undefined ? projectData.tintOpacity : 40;
-        
-        // Reset image since it is not saved inside JSON (kept files lightweight)
-        state.bgImage = null;
-        el.previewBgImage.src = '';
-        el.previewBgImage.classList.remove('loaded');
-        
-        if (state.bgImageName) {
-          el.bgImageName.textContent = state.bgImageName;
-          el.bgAdjustmentsPanel.classList.remove('hidden');
-          // Update zone warnings
-          document.querySelector('#bg-upload-zone p').innerHTML = `Requires background: <strong style="color:var(--accent-teal);">${state.bgImageName}</strong>`;
-          document.querySelector('#bg-upload-zone span').textContent = `Drag and drop file here to restore.`;
-        } else {
-          el.bgImageName.textContent = 'No file selected';
-          el.bgAdjustmentsPanel.classList.add('hidden');
-          document.querySelector('#bg-upload-zone p').textContent = 'Drag background image here';
-          document.querySelector('#bg-upload-zone span').textContent = 'or click to browse local files';
-        }
-
-        // Sync slider values
-        el.bgZoom.value = state.bgZoom;
-        el.bgZoomVal.textContent = state.bgZoom + 'x';
-        el.bgOffsetX.value = state.bgOffsetX;
-        el.bgOffsetXVal.textContent = state.bgOffsetX + '%';
-        el.bgOffsetY.value = state.bgOffsetY;
-        el.bgOffsetYVal.textContent = state.bgOffsetY + '%';
-        
-        el.canvasBgColor.value = state.canvasBgColor;
-        el.canvasBgColorHex.value = state.canvasBgColor;
-        el.enableTint.checked = state.enableTint;
-        if (state.enableTint) {
-          el.tintControlsWrapper.classList.remove('hidden');
-        } else {
-          el.tintControlsWrapper.classList.add('hidden');
-        }
-        el.tintColor.value = state.tintColor;
-        el.tintColorHex.value = state.tintColor;
-        el.tintOpacity.value = state.tintOpacity;
-        el.tintOpacityVal.textContent = state.tintOpacity + '%';
-        
-        // Preset tabs synchronization
-        el.presetTabs.querySelectorAll('.tab-btn').forEach(btn => {
-          if (btn.dataset.preset === state.preset) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
-        if (state.preset === 'custom') {
-          el.customSizeControls.classList.remove('hidden');
-          el.customW.value = state.width;
-          el.customH.value = state.height;
-        } else {
-          el.customSizeControls.classList.add('hidden');
-        }
-
-        state.zoomMode = 'fit';
-        updateCanvasDimensions();
-        fitPreviewToScreen();
-
-        // Layers restoration
-        state.layers = projectData.layers || [];
-        if (state.layers.length === 0) {
-          addTextLayer();
-        } else {
-          state.activeLayerId = state.layers[0].id;
-        }
-        
-        // Custom Fonts loading from Base64 serialization
-        state.customFonts = projectData.customFonts || [];
-        const fontPromises = state.customFonts.map(font => {
-          const buffer = base64ToArrayBuffer(font.base64);
-          const fontFace = new FontFace(font.name, buffer);
-          return fontFace.load().then(loaded => {
-            document.fonts.add(loaded);
-            
-            // Check if option in dropdown
-            let optionExists = false;
-            for (let i = 0; i < el.textFont.options.length; i++) {
-              if (el.textFont.options[i].value === font.name) {
-                optionExists = true;
-                break;
-              }
-            }
-            if (!optionExists) {
-              const option = document.createElement('option');
-              option.value = font.name;
-              option.textContent = `Custom: ${font.fileName.replace(/\.[^/.]+$/, "")}`;
-              el.textFont.appendChild(option);
-            }
-          }).catch(err => console.error("Could not register serialized font: ", err));
-        });
-
-        // Ensure dynamic Google Fonts are loaded
-        const googleFontPromises = state.layers.map(layer => {
-          const curatedGoogle = ['Outfit', 'Inter', 'Montserrat', 'Playfair Display', 'Space Grotesk'];
-          if (curatedGoogle.includes(layer.textFontFamily)) {
-            return loadGoogleFont(layer.textFontFamily);
-          }
-          return Promise.resolve();
-        });
-
-        Promise.all([...fontPromises, ...googleFontPromises]).then(() => {
-          renderLayersList();
-          syncActiveLayerControls();
-          updateCanvasDimensions();
-        });
-        
-      } catch (err) {
-        alert("Failed to parse design file: " + err.message);
-      }
-    }
-
-    // High resolution graphic renderer & downloader
-    function exportPNG() {
-      const canvas = document.createElement('canvas');
-      canvas.width = state.width;
-      canvas.height = state.height;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Base canvas color
-      ctx.fillStyle = state.canvasBgColor;
-      ctx.fillRect(0, 0, state.width, state.height);
-
-      // Draw background image
-      const drawBackground = () => {
-        if (state.bgImage) {
-          const containerRatio = state.width / state.height;
-          const imgRatio = state.bgImage.width / state.bgImage.height;
-
-          let baseWidth = state.width;
-          let baseHeight = state.height;
-
-          if (state.bgSizeMode === 'cover') {
-            if (imgRatio > containerRatio) {
-              baseHeight = state.height;
-              baseWidth = state.height * imgRatio;
-            } else {
-              baseWidth = state.width;
-              baseHeight = state.width / imgRatio;
-            }
-          } else { // contain
-            if (imgRatio > containerRatio) {
-              baseWidth = state.width;
-              baseHeight = state.width / imgRatio;
-            } else {
-              baseHeight = state.height;
-              baseWidth = state.height * imgRatio;
-            }
-          }
-
-          ctx.save();
-          ctx.translate(state.width / 2, state.height / 2);
-          const tx = (state.bgOffsetX / 100) * state.width;
-          const ty = (state.bgOffsetY / 100) * state.height;
-          ctx.translate(tx, ty);
-          ctx.scale(state.bgZoom, state.bgZoom);
-          ctx.drawImage(state.bgImage, -baseWidth / 2, -baseHeight / 2, baseWidth, baseHeight);
-          ctx.restore();
-        }
-      };
-
-      drawBackground();
-
-      // Tint overlay filter
-      if (state.enableTint && state.tintOpacity > 0) {
-        ctx.save();
-        ctx.fillStyle = hexToRgba(state.tintColor, state.tintOpacity / 100);
-        ctx.fillRect(0, 0, state.width, state.height);
-        ctx.restore();
-      }
-
-      // Loop and draw all text layers in sequence
-      state.layers.forEach(layer => {
-        ctx.save();
-        
-        const fontSize = layer.textFontSize;
-        ctx.font = `${layer.textWeight} ${fontSize}px "${layer.textFontFamily}", sans-serif`;
-        ctx.textAlign = layer.textAlign;
-        ctx.textBaseline = 'top';
-        if ('letterSpacing' in ctx) {
-          ctx.letterSpacing = layer.textLetterSpacing + 'px';
-        }
-
-        const maxBoxWidth = 0.8 * state.width; 
-        const lines = getWrappedLines(ctx, layer.textContent, maxBoxWidth);
-        const lineGap = layer.textLineHeight * fontSize;
-        const totalTextHeight = (lines.length - 1) * lineGap + fontSize;
-        
-        let maxLineWidth = 0;
-        for (const line of lines) {
-          const w = ctx.measureText(line).width;
-          if (w > maxLineWidth) {
-            maxLineWidth = w;
-          }
-        }
-
-        const tx = (layer.textX / 100) * state.width;
-        const ty = (layer.textY / 100) * state.height;
-
-        const pad = layer.enableBgBlock ? layer.bgBlockPadding : 0;
-        const radius = layer.enableBgBlock ? layer.bgBlockRadius : 0;
-        
-        const W_box = maxLineWidth + 2 * pad;
-        const H_box = totalTextHeight + 2 * pad;
-        
-        let X_box = tx - W_box / 2;
-        if (layer.textAlign === 'left') {
-          X_box = tx - pad;
-        } else if (layer.textAlign === 'right') {
-          X_box = tx - W_box + pad;
-        }
-        const Y_box = ty - H_box / 2;
-
-        // Draw backplate panel
-        if (layer.enableBgBlock) {
-          ctx.fillStyle = hexToRgba(layer.bgBlockColor, layer.bgBlockOpacity / 100);
-          drawRoundedRect(ctx, X_box, Y_box, W_box, H_box, radius);
-          ctx.fill();
-        }
-
-        // Draw layer text shadows
-        if (layer.enableShadow) {
-          ctx.shadowColor = layer.shadowColor;
-          ctx.shadowBlur = layer.shadowBlur;
-          ctx.shadowOffsetX = layer.shadowX;
-          ctx.shadowOffsetY = layer.shadowY;
-        }
-
-        // Draw text lines
-        ctx.fillStyle = layer.textColor;
-        const startY = ty - totalTextHeight / 2;
-        
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          const lineY = startY + (i * lineGap);
-          const lineX = tx; // automatically aligned by ctx.textAlign
-          
-          ctx.fillText(line, lineX, lineY);
-        }
-
-        ctx.restore();
-      });
-
-      // Browser trigger download
-      const dataURL = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      const cleanName = (state.bgImageName ? state.bgImageName.replace(/\.[^/.]+$/, "") : 'graphic')
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]/g, '-');
-        
-      link.download = `signage-export-${state.preset}-${cleanName}.png`;
-      link.href = dataURL;
-      link.click();
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      Promise.all([
-        loadGoogleFont('Outfit'),
-        loadGoogleFont('Inter')
-      ]).then(() => {
-        init();
-      });
+      showToast('CueSmith Signage Generator Ready · Press ? for Shortcuts', 3500);
     });
   </script>
 </body>

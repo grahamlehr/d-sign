@@ -1,10 +1,67 @@
-# D-Sign · Digital Signage Graphic Generator
+# D-Sign · CueSmith Digital Signage Generator
 
-A standalone client-side tool for generating offline digital signage graphics, screen slides, and visual notices with background image framing, typography overlay layers, JSON layout serialization, and high-resolution raster PNG export.
+A modern, high-precision client-side web application for designing and exporting broadcast- and display-grade digital signage graphics, running orders, and notices. 
 
-## Features (Baseline)
-- Screen formats: HD Landscape (1920×1080), HD Portrait (1080×1920), 4K Landscape (3840×2160), 4K Portrait (2160×3840), and Custom dimensions.
-- Background image adjustments: Cover/Contain modes, scale/zoom, X/Y offset sliders.
-- Multiple text layers with font selection, alignment, sizing, and shadows.
-- JSON project save & load.
-- Production PNG export.
+Rebuilt from the ground up implementing the **CueSmith Modernist Design Language** with architectural typography, tabular numerical metrics, strict 0px border radius, 2px structural dividing rules, and an end-to-end direct manipulation **drag-and-drop interaction suite**.
+
+---
+
+## Key Features
+
+### 1. CueSmith Modernist Design Language
+- **Architectural Typography**: Set entirely in **Archivo** (400–900 weight ramp) with tabular numbers (`font-variant-numeric: tabular-nums`) across all dimensions, coordinates, and aspect ratios.
+- **Color Discipline**: Light ground (`#f3f2f2`), surface (`#eae9e9`), and dark ink (`#201e1d`) with a single live accent red (`#ec3013`).
+- **Strict 0px Border Radius**: Zero rounded corners (`--radius-sm: 0px`, `--radius-md: 0px`, `--radius-lg: 0px`) across all cards, buttons, badges, inputs, and preview containers.
+- **2px Structural Dividers**: Major functional sections separated by strong 2px rules (`--color-divider`).
+- **Flush-Left Label Alignment**: Button labels align flush to the left padding edge per Modernist guidelines.
+- **Grayscale Print & Photo Treatment**: High-contrast pure black-and-white toggle (`.grayscale`) for signage photographs and backgrounds.
+- **Daylight & Backstage (Dark) Modes**: Theme toggle switching between standard Daylight office mode and Backstage Dark mode (`#161514` ground) for low-light control rooms.
+
+### 2. Direct Drag-and-Drop Interaction Suite
+- **On-Canvas Text Layer Dragging**: Click and drag any text layer directly on the preview canvas to reposition it freely.
+- **Magnetic Alignment Snapping**: Center crosshairs (horizontal and vertical $50.0\%$ center) snap dynamically with magnetic guidelines ($\pm 1.4\%$ threshold).
+- **On-Canvas Coordinate HUD**: Active layer displays live percentage coordinates (`X: 50.0%  Y: 45.0%`) directly on canvas while dragging.
+- **On-Canvas Background Panning**: Hold <kbd>Spacebar</kbd> or toggle the Pan tool to drag and pan background images directly.
+- **Sidebar Layer Reordering**: Drag layer cards in the **03 Layers Manager** up or down to reorder canvas z-index stacking with visual insertion lines.
+- **Global Drag-and-Drop Ingestion**:
+  - Drag & drop an **image** anywhere to immediately set the background.
+  - Drag & drop a **`.json` file** to load a saved signage project.
+  - Drag & drop a **`.ttf` or `.otf` font file** to register and activate custom fonts dynamically.
+
+### 3. Screen Formats & Production Export
+- **Standard Presets**:
+  - HD Landscape ($1920 \times 1080$)
+  - HD Portrait ($1080 \times 1920$)
+  - 4K Landscape ($3840 \times 2160$)
+  - 4K Portrait ($2160 \times 3840$)
+  - Custom pixel dimensions (up to $8000 \times 8000$)
+- **High-Resolution PNG Export**: Renders exact 1:1 raster canvas graphics with line wrapping, letter spacing, drop shadows, and backing plates.
+- **JSON Project Portability**: Save and load complete signage layouts with Base64-encoded custom font embedding.
+
+---
+
+## Keyboard Shortcuts & Gestures
+
+| Shortcut | Action |
+| :--- | :--- |
+| <kbd>Click & Drag</kbd> on text | Directly move text layer on canvas |
+| <kbd>Space + Drag</kbd> on canvas | Directly pan background image |
+| <kbd>Arrow Keys</kbd> | Nudge active layer position by 0.5% |
+| <kbd>Shift</kbd> + <kbd>Arrow Keys</kbd> | Nudge active layer position by 5.0% |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>D</kbd> | Duplicate selected text layer |
+| <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Delete selected layer (when not editing an input) |
+| <kbd>S</kbd> | Toggle magnetic center-snap guidelines |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>Z</kbd> | Undo last coordinate or layer mutation |
+| <kbd>?</kbd> | Open Shortcuts & Gestures dialog |
+| <kbd>Esc</kbd> | Close dialog / deselect active elements |
+
+---
+
+## Getting Started
+
+Because **D-Sign** is a standalone, client-only application, it requires no Node.js runtime or build step:
+
+1. Open `Digital-Signage-Maker.html` directly in any modern web browser (Chrome, Edge, Safari, Firefox).
+2. Drag and drop a background image or click **Browse** in section **02 Background Image**.
+3. Add or select text layers in section **03 Layers Manager** and drag them directly on the canvas preview to position them.
+4. Click **Export PNG** in the header to download the high-resolution output.
