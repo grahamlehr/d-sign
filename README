@@ -24,9 +24,10 @@ Rebuilt from the ground up implementing the **CueSmith Modernist Design Language
 - **On-Canvas Background Panning**: Hold <kbd>Spacebar</kbd> or toggle the Pan tool to drag and pan background images directly.
 - **Sidebar Layer Reordering**: Drag layer cards in the **03 Layers Manager** up or down to reorder canvas z-index stacking with visual insertion lines.
 - **Global Drag-and-Drop Ingestion**:
+  - Drag & drop a **ZIP template archive (`.zip`)** anywhere to load an entire template package with background image and custom fonts.
   - Drag & drop an **image** anywhere to immediately set the background.
   - Drag & drop a **`.json` file** to load a saved signage project.
-  - Drag & drop a **`.ttf` or `.otf` font file** to register and activate custom fonts dynamically.
+  - Drag & drop a **`.ttf`, `.otf`, or `.woff2` font file** to register and activate custom fonts dynamically.
 
 ### 3. Screen Formats & Production Export
 - **Standard Presets**:
@@ -36,7 +37,47 @@ Rebuilt from the ground up implementing the **CueSmith Modernist Design Language
   - 4K Portrait ($2160 \times 3840$)
   - Custom pixel dimensions (up to $8000 \times 8000$)
 - **High-Resolution PNG Export**: Renders exact 1:1 raster canvas graphics with line wrapping, letter spacing, drop shadows, and backing plates.
-- **JSON Project Portability**: Save and load complete signage layouts with Base64-encoded custom font embedding.
+- **JSON Project Portability**: Save and load lightweight JSON signage definitions.
+- **Template ZIP Packages**: Save and load complete self-contained portable archive packages.
+
+---
+
+## Template ZIP Package Format (`.zip`)
+
+D-Sign supports exporting and loading self-contained **Template ZIP archives** (`D-Sign-Template-[preset]-[timestamp].zip`) using JSZip. Unlike plain JSON project files which only reference background image names or embed bloated Base64 strings, Template ZIPs package all necessary assets cleanly into a unified archive:
+
+```
+D-Sign-Template-[preset]-[timestamp].zip
+├── template.json      # Template metadata, layout schema, layer styles, coordinates
+├── images/            # Background graphic asset (PNG, JPG, WebP)
+└── fonts/             # Custom binary font files (.ttf, .otf, .woff2)
+```
+
+### `template.json` Schema & Version Tracking
+- **`app`**: Application identifier signature (`"digital-signage-generator"`).
+- **`framework`**: Layout engine identifier (`"CueSmith-Modernist"`).
+- **`dSignVersion`**: Semantic application version at time of export (e.g. `"2.0.0"`).
+- **`schemaVersion`**: Integer schema revision (`1`) for structural migration checks.
+- **`preset`, `width`, `height`**: Canvas dimensions and layout orientation.
+- **`bgImageName`, `bgImagePath`**: Relative path to background image inside the archive (`images/...`).
+- **`bgSizeMode`, `bgZoom`, `bgOffsetX`, `bgOffsetY`, `bgGrayscale`**: Background transformation parameters.
+- **`canvasBgColor`, `enableTint`, `tintColor`, `tintOpacity`**: Canvas ground and overlay tint parameters.
+- **`layers`**: Ordered list of text layer configuration objects (coordinates, font family, size, weight, letter spacing, alignment, shadow, backing box).
+- **`customFonts`**: Array of font descriptors with relative archive paths:
+  ```json
+  "customFonts": [
+    {
+      "name": "Custom_Futura_Bold_1710000000000",
+      "fileName": "Futura-Bold.ttf",
+      "path": "fonts/Futura-Bold.ttf"
+    }
+  ]
+  ```
+
+### Version Compatibility & Asset Restoration
+- **Semver Evaluation**: During import, `dSignVersion` is compared against the active application version (`APP_VERSION`). Non-breaking minor updates display an informative notification, while major version differences warn the user of potential incompatibilities.
+- **Dynamic Font Loading**: Custom fonts in `fonts/` are loaded asynchronously as `ArrayBuffer` instances into the browser's `FontFaceSet` via the `FontFace` API and appended to font selection dropdowns. Fallback support is included for legacy Base64 font strings.
+- **Background Image Reconstruction**: Raster assets in `images/` are extracted as `Blob` objects, converted to object URLs for DOM rendering, and preserved as blobs in `state.bgImageBlob` for re-exporting.
 
 ---
 
@@ -44,6 +85,8 @@ Rebuilt from the ground up implementing the **CueSmith Modernist Design Language
 
 | Shortcut | Action |
 | :--- | :--- |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>S</kbd> | Export complete Template ZIP archive |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>O</kbd> | Open / Load Template ZIP archive file picker |
 | <kbd>Click & Drag</kbd> on text | Directly move text layer on canvas |
 | <kbd>Space + Drag</kbd> on canvas | Directly pan background image |
 | <kbd>Arrow Keys</kbd> | Nudge active layer position by 0.5% |
@@ -52,6 +95,7 @@ Rebuilt from the ground up implementing the **CueSmith Modernist Design Language
 | <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Delete selected layer (when not editing an input) |
 | <kbd>S</kbd> | Toggle magnetic center-snap guidelines |
 | <kbd>Cmd / Ctrl</kbd> + <kbd>Z</kbd> | Undo last coordinate or layer mutation |
+| <kbd>Drag & Drop</kbd> files anywhere | Drop ZIP for template, image for background, JSON to load, TTF/OTF for font |
 | <kbd>?</kbd> | Open Shortcuts & Gestures dialog |
 | <kbd>Esc</kbd> | Close dialog / deselect active elements |
 
@@ -61,7 +105,8 @@ Rebuilt from the ground up implementing the **CueSmith Modernist Design Language
 
 Because **D-Sign** is a standalone, client-only application, it requires no Node.js runtime or build step:
 
-1. Open `Digital-Signage-Maker.html` directly in any modern web browser (Chrome, Edge, Safari, Firefox).
+1. Open `index.html` directly in any modern web browser (Chrome, Edge, Safari, Firefox).
 2. Drag and drop a background image or click **Browse** in section **02 Background Image**.
 3. Add or select text layers in section **03 Layers Manager** and drag them directly on the canvas preview to position them.
-4. Click **Export PNG** in the header to download the high-resolution output.
+4. Save and share complete templates via **Save Template** (<kbd>Cmd / Ctrl</kbd> + <kbd>S</kbd>) or drag any `.zip` template into the browser window.
+5. Click **Export PNG** in the header to download the high-resolution output.
