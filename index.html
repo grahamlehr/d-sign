@@ -1254,6 +1254,19 @@
         <span id="theme-btn-label">Backstage</span>
       </button>
 
+      <!-- Template ZIP Archive File Input (Hidden) & Buttons -->
+      <input type="file" id="load-template-input" accept=".zip" style="display: none;">
+      
+      <button class="btn btn-secondary" id="load-template-btn" title="Open complete template archive (.zip)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        Load Template
+      </button>
+
+      <button class="btn btn-secondary" id="save-template-btn" title="Export complete template archive (.zip) with images and fonts">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        Save Template
+      </button>
+
       <!-- JSON Project File Input (Hidden) -->
       <input type="file" id="load-project-input" accept=".json" style="display: none;">
       
@@ -1808,8 +1821,16 @@
             <td>Toggle magnetic center-snap alignment guidelines</td>
           </tr>
           <tr>
+            <td><span class="kbd">Cmd + S</span> / <span class="kbd">Ctrl + S</span></td>
+            <td>Export complete Template ZIP archive</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Cmd + O</span> / <span class="kbd">Ctrl + O</span></td>
+            <td>Open / Load Template ZIP archive</td>
+          </tr>
+          <tr>
             <td><span class="kbd">Drag & Drop</span> files anywhere</td>
-            <td>Drop image for background, JSON to load, TTF/OTF for font</td>
+            <td>Drop ZIP for template, image for background, JSON to load, TTF/OTF for font</td>
           </tr>
           <tr>
             <td><span class="kbd">Cmd + Z</span> / <span class="kbd">Ctrl + Z</span></td>
@@ -1826,8 +1847,17 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- JSZip Archive Library (for ZIP template export/import) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
   <!-- Application Logic -->
   <script>
+    /* ==========================================================================
+       Version & Schema Constants
+       ========================================================================== */
+    const APP_VERSION = '2.0.0';
+    const SCHEMA_VERSION = 1;
+
     /* ==========================================================================
        State Management & Preset Definitions
        ========================================================================== */
@@ -1849,6 +1879,8 @@
       // Background
       bgImage: null,
       bgImageName: '',
+      bgImageBlob: null,
+      bgImageDataUrl: '',
       bgSizeMode: 'cover',
       bgZoom: 1.0,
       bgOffsetX: 0,
@@ -1961,6 +1993,9 @@
       loadBtn: document.getElementById('load-btn'),
       loadProjectInput: document.getElementById('load-project-input'),
       saveBtn: document.getElementById('save-btn'),
+      loadTemplateBtn: document.getElementById('load-template-btn'),
+      loadTemplateInput: document.getElementById('load-template-input'),
+      saveTemplateBtn: document.getElementById('save-template-btn'),
       exportBtn: document.getElementById('export-btn'),
 
       // Screen Format
@@ -2653,12 +2688,14 @@
       }
       pushHistorySnapshot();
       state.bgImageName = file.name;
+      state.bgImageBlob = file;
       el.bgImageName.textContent = file.name;
       el.bgStatusTag.textContent = 'LOADED';
       el.bgStatusTag.className = 'tag tag-accent';
 
       const reader = new FileReader();
       reader.onload = (e) => {
+        state.bgImageDataUrl = e.target.result;
         const img = new Image();
         img.onload = () => {
           state.bgImage = img;
@@ -2700,7 +2737,8 @@
           state.customFonts.push({
             name: cleanName,
             fileName: file.name,
-            base64: base64
+            base64: base64,
+            buffer: arrayBuffer
           });
 
           updateActiveLayerProp('textFontFamily', cleanName);
@@ -2759,12 +2797,14 @@
             }
           };
           reader.readAsText(file);
+        } else if (lowerName.endsWith('.zip')) {
+          loadTemplateZip(file);
         } else if (lowerName.endsWith('.ttf') || lowerName.endsWith('.otf') || lowerName.endsWith('.woff2')) {
           handleFontFile(file);
         } else if (file.type.startsWith('image/')) {
           handleImageFile(file);
         } else {
-          showToast('Unsupported file type. Use JPG, PNG, JSON, or TTF/OTF.');
+          showToast('Unsupported file type. Use ZIP, JPG, PNG, JSON, or TTF/OTF.');
         }
       });
     }
@@ -3002,6 +3042,7 @@
           for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
+          font.buffer = bytes.buffer;
           const fontFace = new FontFace(font.name, bytes.buffer);
           fontFace.load().then(loaded => {
             document.fonts.add(loaded);
@@ -3034,6 +3075,407 @@
       updateCanvasDimensions();
       fitPreviewToScreen();
       updatePreview();
+    }
+
+    /* ==========================================================================
+       Template ZIP Archive (Save & Load)
+       ========================================================================== */
+    function compareVersions(v1, v2) {
+      if (!v1 && !v2) return 0;
+      if (!v1) return -1;
+      if (!v2) return 1;
+      const parts1 = String(v1).replace(/^v/i, '').split('.').map(p => parseInt(p, 10) || 0);
+      const parts2 = String(v2).replace(/^v/i, '').split('.').map(p => parseInt(p, 10) || 0);
+      const maxLen = Math.max(parts1.length, parts2.length);
+      for (let i = 0; i < maxLen; i++) {
+        const p1 = parts1[i] || 0;
+        const p2 = parts2[i] || 0;
+        if (p1 > p2) return 1;
+        if (p1 < p2) return -1;
+      }
+      return 0;
+    }
+
+    function base64ToArrayBuffer(base64) {
+      const binaryString = window.atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return window.btoa(binary);
+    }
+
+    async function getImageBlob() {
+      if (state.bgImageBlob) {
+        return state.bgImageBlob;
+      }
+      const src = state.bgImageDataUrl || (state.bgImage && state.bgImage.src ? state.bgImage.src : null);
+      if (!src) return null;
+
+      try {
+        if (src.startsWith('data:') || src.startsWith('blob:') || src.startsWith('http://') || src.startsWith('https://')) {
+          const res = await fetch(src);
+          const blob = await res.blob();
+          state.bgImageBlob = blob;
+          return blob;
+        }
+      } catch (err) {
+        console.warn('Fetch image blob failed, attempting canvas fallback:', err);
+      }
+
+      if (state.bgImage && state.bgImage.complete && state.bgImage.naturalWidth) {
+        return new Promise((resolve) => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = state.bgImage.naturalWidth;
+            canvas.height = state.bgImage.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(state.bgImage, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) state.bgImageBlob = blob;
+              resolve(blob);
+            }, 'image/png');
+          } catch (e) {
+            console.error('Canvas export to blob failed:', e);
+            resolve(null);
+          }
+        });
+      }
+
+      return null;
+    }
+
+    async function exportTemplateZip() {
+      if (typeof JSZip === 'undefined') {
+        showToast('JSZip library is not available');
+        return;
+      }
+
+      try {
+        const zip = new JSZip();
+
+        // 1. Background image
+        let bgImagePath = '';
+        if (state.bgImage) {
+          const imgName = state.bgImageName || 'background.png';
+          bgImagePath = `images/${imgName}`;
+          const imgBlob = await getImageBlob();
+          if (imgBlob) {
+            zip.file(bgImagePath, imgBlob);
+          }
+        }
+
+        // 2. Custom fonts
+        if (state.customFonts && state.customFonts.length > 0) {
+          state.customFonts.forEach(font => {
+            const buffer = font.buffer || (font.base64 ? base64ToArrayBuffer(font.base64) : null);
+            const fileName = font.fileName || (font.name + '.ttf');
+            if (buffer && fileName) {
+              zip.file(`fonts/${fileName}`, buffer);
+            }
+          });
+        }
+
+        // 3. template.json metadata
+        const templateData = {
+          app: 'digital-signage-generator',
+          framework: 'CueSmith-Modernist',
+          dSignVersion: APP_VERSION,
+          schemaVersion: SCHEMA_VERSION,
+          version: '2.0',
+          preset: state.preset,
+          width: state.width,
+          height: state.height,
+          bgImageName: state.bgImageName,
+          bgImagePath: state.bgImage ? (state.bgImageName ? 'images/' + state.bgImageName : 'images/background.png') : '',
+          bgSizeMode: state.bgSizeMode,
+          bgZoom: state.bgZoom,
+          bgOffsetX: state.bgOffsetX,
+          bgOffsetY: state.bgOffsetY,
+          bgGrayscale: state.bgGrayscale,
+          canvasBgColor: state.canvasBgColor,
+          enableTint: state.enableTint,
+          tintColor: state.tintColor,
+          tintOpacity: state.tintOpacity,
+          layers: state.layers,
+          customFonts: state.customFonts.map(f => {
+            const fileName = f.fileName || (f.name + '.ttf');
+            return {
+              name: f.name,
+              fileName: fileName,
+              path: 'fonts/' + fileName
+            };
+          })
+        };
+
+        zip.file('template.json', JSON.stringify(templateData, null, 2));
+
+        // 4. Generate zip archive
+        const zipBlob = await zip.generateAsync({
+          type: 'blob',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        });
+
+        // 5. Download trigger
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement('a');
+        link.download = `D-Sign-Template-${state.preset}-${Date.now()}.zip`;
+        link.href = url;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        showToast('Template ZIP archive exported');
+      } catch (err) {
+        console.error('Export template ZIP failed:', err);
+        showToast('Export failed: ' + err.message);
+      }
+    }
+
+    async function loadTemplateZip(file) {
+      if (!file) return;
+      if (typeof JSZip === 'undefined') {
+        showToast('JSZip library is not available');
+        return;
+      }
+
+      try {
+        const zip = await JSZip.loadAsync(file);
+
+        // Locate template.json (root or subfolder)
+        let templateEntry = zip.file('template.json');
+        let basePath = '';
+        if (!templateEntry) {
+          const matched = zip.file(/template\.json$/i);
+          if (matched && matched.length > 0) {
+            templateEntry = matched[0];
+            const slashIdx = templateEntry.name.lastIndexOf('/');
+            if (slashIdx !== -1) {
+              basePath = templateEntry.name.substring(0, slashIdx + 1);
+            }
+          }
+        }
+
+        if (!templateEntry) {
+          showToast('Invalid template: template.json not found in archive');
+          return;
+        }
+
+        const jsonText = await templateEntry.async('text');
+        const templateData = JSON.parse(jsonText);
+
+        if (templateData.app !== 'digital-signage-generator') {
+          showToast('Invalid Signage template archive: unknown app signature');
+          return;
+        }
+
+        // Compare versions & evaluate breaking changes
+        const templateVer = templateData.dSignVersion || templateData.version || '1.0.0';
+        const templateMajor = parseInt(String(templateVer).replace(/^v/i, '').split('.')[0], 10) || 1;
+        const appMajor = parseInt(APP_VERSION.split('.')[0], 10) || 2;
+        if (templateMajor > appMajor) {
+          showToast(`Warning: Template is from major version v${templateVer} (current is v${APP_VERSION}). Features may be incompatible.`, 5000);
+        } else if (compareVersions(templateVer, APP_VERSION) > 0) {
+          showToast(`Notice: Template was created with newer D-Sign v${templateVer}`, 3500);
+        }
+
+        pushHistorySnapshot();
+
+        // Restore custom fonts from zip
+        state.customFonts = [];
+        if (templateData.customFonts && Array.isArray(templateData.customFonts)) {
+          for (const fontInfo of templateData.customFonts) {
+            try {
+              const fontRelPath = fontInfo.path || ('fonts/' + fontInfo.fileName);
+              let fontFile = zip.file(basePath + fontRelPath);
+              if (!fontFile && fontInfo.fileName) {
+                const safeName = fontInfo.fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const fontMatches = zip.file(new RegExp(safeName + '$', 'i'));
+                if (fontMatches && fontMatches.length > 0) {
+                  fontFile = fontMatches[0];
+                }
+              }
+
+              let fontBuffer = null;
+              if (fontFile) {
+                fontBuffer = await fontFile.async('arraybuffer');
+              } else if (fontInfo.base64) {
+                fontBuffer = base64ToArrayBuffer(fontInfo.base64);
+              }
+
+              if (fontBuffer) {
+                const base64 = fontInfo.base64 || arrayBufferToBase64(fontBuffer);
+                const fontName = fontInfo.name || ('Custom_' + (fontInfo.fileName || 'font').replace(/[^a-zA-Z0-9]/g, '_'));
+                const fontFace = new FontFace(fontName, fontBuffer);
+                const loadedFace = await fontFace.load();
+                document.fonts.add(loadedFace);
+
+                const exists = Array.from(el.textFont.options).some(o => o.value === fontName);
+                if (!exists) {
+                  const option = document.createElement('option');
+                  option.value = fontName;
+                  option.textContent = `Custom: ${(fontInfo.fileName || fontName).replace(/\.[^/.]+$/, '')}`;
+                  el.textFont.appendChild(option);
+                }
+
+                state.customFonts.push({
+                  name: fontName,
+                  fileName: fontInfo.fileName || (fontName + '.ttf'),
+                  base64: base64,
+                  buffer: fontBuffer
+                });
+              }
+            } catch (fontErr) {
+              console.warn('Failed restoring font from archive:', fontInfo, fontErr);
+            }
+          }
+        }
+
+        // Restore background image
+        let imageRestored = false;
+        const targetImgPath = templateData.bgImagePath || (templateData.bgImageName ? ('images/' + templateData.bgImageName) : null);
+
+        let imgEntry = null;
+        if (targetImgPath) {
+          imgEntry = zip.file(basePath + targetImgPath);
+        }
+        if (!imgEntry && templateData.bgImageName) {
+          const safeImgName = templateData.bgImageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const matches = zip.file(new RegExp(safeImgName + '$', 'i'));
+          if (matches && matches.length > 0) {
+            imgEntry = matches[0];
+          }
+        }
+        if (!imgEntry) {
+          const imgMatches = zip.file(/images\/.+/i);
+          if (imgMatches && imgMatches.length > 0) {
+            imgEntry = imgMatches[0];
+          }
+        }
+
+        if (imgEntry) {
+          try {
+            const imgBlob = await imgEntry.async('blob');
+            state.bgImageBlob = imgBlob;
+            state.bgImageName = templateData.bgImageName || imgEntry.name.split('/').pop();
+
+            const dataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(imgBlob);
+            });
+            state.bgImageDataUrl = dataUrl;
+
+            const objectUrl = URL.createObjectURL(imgBlob);
+            await new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                state.bgImage = img;
+                el.previewBgImage.src = objectUrl;
+                el.previewBgImage.classList.add('loaded');
+                el.bgAdjustmentsPanel.classList.remove('hidden');
+                el.bgImageName.textContent = state.bgImageName;
+                el.bgStatusTag.textContent = 'LOADED';
+                el.bgStatusTag.className = 'tag tag-accent';
+                resolve();
+              };
+              img.onerror = (e) => {
+                URL.revokeObjectURL(objectUrl);
+                reject(e);
+              };
+              img.src = objectUrl;
+            });
+
+            imageRestored = true;
+          } catch (imgLoadErr) {
+            console.warn('Failed restoring background image from archive:', imgLoadErr);
+          }
+        }
+
+        if (!imageRestored) {
+          state.bgImage = null;
+          state.bgImageName = '';
+          state.bgImageBlob = null;
+          state.bgImageDataUrl = '';
+          el.previewBgImage.src = '';
+          el.previewBgImage.classList.remove('loaded');
+          el.bgAdjustmentsPanel.classList.add('hidden');
+          el.bgImageInput.value = '';
+          el.bgImageName.textContent = 'No file selected';
+          el.bgStatusTag.textContent = 'EMPTY';
+          el.bgStatusTag.className = 'tag tag-neutral';
+        }
+
+        // Restore canvas, preset, size, tint, grayscale, layers, activeLayerId
+        state.preset = templateData.preset || 'landscape';
+        state.width = templateData.width || 1920;
+        state.height = templateData.height || 1080;
+
+        state.bgSizeMode = templateData.bgSizeMode || 'cover';
+        state.bgZoom = templateData.bgZoom !== undefined ? templateData.bgZoom : 1.0;
+        state.bgOffsetX = templateData.bgOffsetX !== undefined ? templateData.bgOffsetX : 0;
+        state.bgOffsetY = templateData.bgOffsetY !== undefined ? templateData.bgOffsetY : 0;
+        state.bgGrayscale = !!templateData.bgGrayscale;
+
+        state.canvasBgColor = templateData.canvasBgColor || '#0b0f19';
+        state.enableTint = templateData.enableTint !== undefined ? templateData.enableTint : false;
+        state.tintColor = templateData.tintColor || '#000000';
+        state.tintOpacity = templateData.tintOpacity !== undefined ? templateData.tintOpacity : 40;
+
+        state.layers = templateData.layers && templateData.layers.length > 0 ? templateData.layers : [
+          {
+            id: 'layer_1',
+            textContent: 'D-SIGN DIGITAL SIGNAGE',
+            textFontFamily: 'Archivo',
+            textWeight: '800',
+            textAlign: 'center',
+            textX: 50.0,
+            textY: 45.0,
+            textFontSize: 70,
+            textLineHeight: 1.2,
+            textLetterSpacing: 1.5,
+            textColor: '#ffffff',
+            enableShadow: false,
+            shadowColor: '#000000',
+            shadowBlur: 15,
+            shadowX: 3,
+            shadowY: 3,
+            enableBgBlock: false,
+            bgBlockColor: '#000000',
+            bgBlockOpacity: 60,
+            bgBlockPadding: 20,
+            bgBlockRadius: 0
+          }
+        ];
+        state.activeLayerId = templateData.activeLayerId || state.layers[0].id;
+
+        if (el.customW && el.customH) {
+          el.customW.value = state.width;
+          el.customH.value = state.height;
+        }
+
+        // Sync UI controls and canvas
+        syncAllUIControls();
+        updateCanvasDimensions();
+        fitPreviewToScreen();
+        updatePreview();
+        showToast('Template archive loaded successfully');
+      } catch (err) {
+        console.error('Error loading template ZIP:', err);
+        showToast('Failed to load template archive: ' + err.message);
+      }
     }
 
     /* ==========================================================================
@@ -3264,6 +3706,8 @@
         pushHistorySnapshot();
         state.bgImage = null;
         state.bgImageName = '';
+        state.bgImageBlob = null;
+        state.bgImageDataUrl = '';
         el.previewBgImage.src = '';
         el.previewBgImage.classList.remove('loaded');
         el.bgAdjustmentsPanel.classList.add('hidden');
@@ -3491,6 +3935,20 @@
         el.loadProjectInput.value = '';
       });
 
+      // Template Archive (.zip) Save & Load
+      if (el.saveTemplateBtn) {
+        el.saveTemplateBtn.addEventListener('click', exportTemplateZip);
+      }
+      if (el.loadTemplateBtn && el.loadTemplateInput) {
+        el.loadTemplateBtn.addEventListener('click', () => el.loadTemplateInput.click());
+        el.loadTemplateInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            loadTemplateZip(e.target.files[0]);
+          }
+          el.loadTemplateInput.value = '';
+        });
+      }
+
       el.exportBtn.addEventListener('click', exportPNG);
 
       // Keyboard Ergonomics
@@ -3524,6 +3982,18 @@
             e.preventDefault();
             undoLastAction();
           }
+        }
+
+        // Save Template ZIP (Cmd+S or Ctrl+S)
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's' && !e.shiftKey) {
+          e.preventDefault();
+          exportTemplateZip();
+        }
+
+        // Load Template ZIP (Cmd+O or Ctrl+O)
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
+          e.preventDefault();
+          if (el.loadTemplateInput) el.loadTemplateInput.click();
         }
 
         // Duplicate (Cmd+D or Ctrl+D)
