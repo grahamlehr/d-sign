@@ -1,112 +1,223 @@
 # D-Sign · CueSmith Digital Signage Generator
 
-A modern, high-precision client-side web application for designing and exporting broadcast- and display-grade digital signage graphics, running orders, and notices. 
+A modern, high-precision client-side web application for designing and exporting broadcast- and display-grade digital signage graphics, running orders, lower thirds, and notices.
 
 Rebuilt from the ground up implementing the **CueSmith Modernist Design Language** with architectural typography, tabular numerical metrics, strict 0px border radius, 2px structural dividing rules, and an end-to-end direct manipulation **drag-and-drop interaction suite**.
 
 ---
 
-## Key Features
+## What's New in Version 2.1.0
 
-### 1. CueSmith Modernist Design Language
-- **Architectural Typography**: Set entirely in **Archivo** (400–900 weight ramp) with tabular numbers (`font-variant-numeric: tabular-nums`) across all dimensions, coordinates, and aspect ratios.
+### 1. First-Class Transparent PNG Image Layers
+- **32-Bit Alpha Preservation**: Import, position, and composite transparent cutouts, logos, icons, badges, stamps, and graphics with complete 32-bit truecolor RGBA alpha preservation.
+- **Native Resolution & Metadata**: Automatically inspects native pixel dimensions upon upload (`ORIG: W × H PX`) and maintains crisp raster fidelity.
+- **In-Place Image Asset Replacement**: Swap out layer graphic assets on the fly with **Replace Image** without losing position coordinates, rotation, scaling, or drop shadows.
+- **Photographic Grayscale Treatment**: Modernist high-contrast pure black-and-white treatment toggle (`grayscale(1) contrast(1.08)`) for monochrome signage aesthetics.
+
+### 2. Full Sizing & Proportional Scaling Suite
+- **Direct Dimensions**: Fine-grained tabular input fields for Width ($W$) and Height ($H$) in physical canvas pixels.
+- **Aspect Ratio Lock**: Proportional lock constraint prevents distortion while scaling or resizing via inputs or corner handles.
+- **Continuous Scale Slider**: Tabular numerical slider scaling layers from $10\%$ up to $500\%$ of native dimensions.
+- **One-Click Quick Sizing Presets**:
+  - `100%`: Instantly reset layer to native pixel dimensions.
+  - `Fit Width`: Proportionally scale layer to $80\%$ of total canvas width.
+  - `Fit Height`: Proportionally scale layer to $80\%$ of total canvas height.
+  - `50%`: Rapid half-scale reduction.
+
+### 3. Direct On-Canvas Manipulation & Magnetic Snapping
+- **Interactive Corner Resize Handles**: 4 active corner handles (`nw`, `ne`, `se`, `sw`) with un-rotated matrix un-projection math, enabling natural drag-resizing even on layers rotated at arbitrary angles.
+- **Rotation Stalk & Grip**: Dedicated 24px vertical stalk with circular grip positioned above top-center of the active layer for intuitive direct rotation.
+- **Magnetic Angle Snapping**: Dynamic snapping to standard angular candidates ($0^\circ, \pm 45^\circ, \pm 90^\circ, \pm 135^\circ, \pm 180^\circ$) within a $\pm 3.0^\circ$ magnetic threshold. Hold <kbd>Shift</kbd> to snap strictly to $45^\circ$ increments at any angle.
+- **Rotation Presets**: Dedicated quick-rotation buttons for `0°` (reset), `-90°` (counter-clockwise), `+90°` (clockwise), and `180°` (flip).
+- **On-Canvas Coordinate & Rotation HUD**: Live tabular numerical metrics displayed above the active bounding box during translation, resizing, and rotation (`X: 50.0%  Y: 50.0% · W: 400px · ∠ 45.0°`).
+
+### 4. Silhouette Drop Shadow Suite
+- **Cutout Silhouette Drop Shadows**: Projects shadows conforming to non-transparent alpha contours of cutouts and icons rather than rectangular bounding boxes.
+- **Interactive Controls**: Dedicated controls for shadow color (hex + picker), blur radius ($0\text{–}60\text{px}$), and offset coordinates ($X$ and $Y$).
+- **Dual Pipeline Fidelity**: Rendered in the browser preview via high-performance CSS filter dropshadows (`drop-shadow(...)`) and baked into high-resolution PNG exports using native HTML5 2D Canvas shadow pipelines (`ctx.shadowColor`, `ctx.shadowBlur`, `ctx.shadowOffsetX`, `ctx.shadowOffsetY`).
+
+### 5. Unified Stacking & Layer Management
+- **Polymorphic Layer Architecture**: Unified text and image layer manager with seamless z-index ordering.
+- **Visual Identity**: Miniature $24 \times 24\text{px}$ checkered thumbnails for transparent PNG layers and high-contrast Modernist tags (`PNG` in accent red vs. `TXT` in neutral ink).
+- **Drag-and-Drop Reordering**: Drag layer cards up or down with live insertion guidelines to modify visual stacking order.
+- **One-Click Reordering**: Step layers up or down with dedicated arrow controls.
+- **Layer Duplication & Deletion**: Duplicate any selected layer (<kbd>Cmd / Ctrl</kbd> + <kbd>D</kbd>) with automatic $+3\%$ coordinate offset, or delete with <kbd>Delete</kbd> / <kbd>Backspace</kbd> (enforcing a minimum 1 layer safety rule).
+
+### 6. Template ZIP Package Schema Version 2
+- **Self-Contained Portable Packaging**: ZIP archives package all graphic cutouts directly under `images/layers/` along with the background image and custom fonts.
+- **Lightweight Clean Schema**: `template.json` records relative asset paths (`images/layers/...`) while omitting bloated Base64 data URLs.
+- **Automatic Asset Restoration**: ZIP loader unpacks binary PNG blobs, reconstructs clean data URLs, and creates live `HTMLImageElement` instances in the browser cache.
+- **Backwards Compatibility**: Schema v2 fully migrates legacy Schema v1 project definitions and text layers, normalizing coordinate representations and property defaults seamlessly.
+
+---
+
+## CueSmith Modernist Design Language
+
+- **Architectural Typography**: Set entirely in **Archivo** (400–900 weight ramp) with tabular numbers (`font-variant-numeric: tabular-nums`) across all dimensions, coordinates, angles, and aspect ratios.
 - **Color Discipline**: Light ground (`#f3f2f2`), surface (`#eae9e9`), and dark ink (`#201e1d`) with a single live accent red (`#ec3013`).
 - **Strict 0px Border Radius**: Zero rounded corners (`--radius-sm: 0px`, `--radius-md: 0px`, `--radius-lg: 0px`) across all cards, buttons, badges, inputs, and preview containers.
 - **2px Structural Dividers**: Major functional sections separated by strong 2px rules (`--color-divider`).
 - **Flush-Left Label Alignment**: Button labels align flush to the left padding edge per Modernist guidelines.
-- **Grayscale Print & Photo Treatment**: High-contrast pure black-and-white toggle (`.grayscale`) for signage photographs and backgrounds.
-- **Daylight & Backstage (Dark) Modes**: Theme toggle switching between standard Daylight office mode and Backstage Dark mode (`#161514` ground) for low-light control rooms.
+- **Daylight & Backstage Modes**: Theme toggle switching between standard Daylight office mode and Backstage Dark mode (`#161514` ground) for low-light control rooms.
 
-### 2. Direct Drag-and-Drop Interaction Suite
-- **On-Canvas Text Layer Dragging**: Click and drag any text layer directly on the preview canvas to reposition it freely.
-- **Magnetic Alignment Snapping**: Center crosshairs (horizontal and vertical $50.0\%$ center) snap dynamically with magnetic guidelines ($\pm 1.4\%$ threshold).
-- **On-Canvas Coordinate HUD**: Active layer displays live percentage coordinates (`X: 50.0%  Y: 45.0%`) directly on canvas while dragging.
-- **On-Canvas Background Panning**: Hold <kbd>Spacebar</kbd> or toggle the Pan tool to drag and pan background images directly.
-- **Sidebar Layer Reordering**: Drag layer cards in the **03 Layers Manager** up or down to reorder canvas z-index stacking with visual insertion lines.
-- **Global Drag-and-Drop Ingestion**:
-  - Drag & drop a **ZIP template archive (`.zip`)** anywhere to load an entire template package with background image and custom fonts.
-  - Drag & drop an **image** anywhere to immediately set the background.
-  - Drag & drop a **`.json` file** to load a saved signage project.
-  - Drag & drop a **`.ttf`, `.otf`, or `.woff2` font file** to register and activate custom fonts dynamically.
+---
 
-### 3. Screen Formats & Production Export
-- **Standard Presets**:
-  - HD Landscape ($1920 \times 1080$)
-  - HD Portrait ($1080 \times 1920$)
-  - 4K Landscape ($3840 \times 2160$)
-  - 4K Portrait ($2160 \times 3840$)
+## Screen Formats & Production Export
+
+- **Standard Broadcast & Display Presets**:
+  - HD Landscape ($1920 \times 1080$, 16:9)
+  - HD Portrait ($1080 \times 1920$, 9:16)
+  - 4K Landscape ($3840 \times 2160$, 16:9)
+  - 4K Portrait ($2160 \times 3840$, 9:16)
   - Custom pixel dimensions (up to $8000 \times 8000$)
-- **High-Resolution PNG Export**: Renders exact 1:1 raster canvas graphics with line wrapping, letter spacing, drop shadows, and backing plates.
-- **JSON Project Portability**: Save and load lightweight JSON signage definitions.
+- **High-Resolution Production PNG Export**: Renders exact 1:1 raster canvas graphics with 2D transformation matrices, text line wrapping, letter spacing, drop shadows, backing plates, and alpha blending.
+- **JSON Project Portability**: Save and load lightweight JSON signage definitions with embedded data URLs.
 - **Template ZIP Packages**: Save and load complete self-contained portable archive packages.
 
 ---
 
 ## Template ZIP Package Format (`.zip`)
 
-D-Sign supports exporting and loading self-contained **Template ZIP archives** (`D-Sign-Template-[preset]-[timestamp].zip`) using JSZip. Unlike plain JSON project files which only reference background image names or embed bloated Base64 strings, Template ZIPs package all necessary assets cleanly into a unified archive:
+D-Sign exports and loads self-contained **Template ZIP archives** (`D-Sign-Template-[preset]-[timestamp].zip`) using JSZip:
 
 ```
 D-Sign-Template-[preset]-[timestamp].zip
-├── template.json      # Template metadata, layout schema, layer styles, coordinates
+├── template.json      # Layout schema, coordinates, styling, and relative asset paths (Schema v2)
 ├── images/            # Background graphic asset (PNG, JPG, WebP)
+│   └── layers/        # Binary 32-bit transparent PNG layer cutouts
 └── fonts/             # Custom binary font files (.ttf, .otf, .woff2)
 ```
 
-### `template.json` Schema & Version Tracking
-- **`app`**: Application identifier signature (`"digital-signage-generator"`).
-- **`framework`**: Layout engine identifier (`"CueSmith-Modernist"`).
-- **`dSignVersion`**: Semantic application version at time of export (e.g. `"2.0.0"`).
-- **`schemaVersion`**: Integer schema revision (`1`) for structural migration checks.
-- **`preset`, `width`, `height`**: Canvas dimensions and layout orientation.
-- **`bgImageName`, `bgImagePath`**: Relative path to background image inside the archive (`images/...`).
-- **`bgSizeMode`, `bgZoom`, `bgOffsetX`, `bgOffsetY`, `bgGrayscale`**: Background transformation parameters.
-- **`canvasBgColor`, `enableTint`, `tintColor`, `tintOpacity`**: Canvas ground and overlay tint parameters.
-- **`layers`**: Ordered list of text layer configuration objects (coordinates, font family, size, weight, letter spacing, alignment, shadow, backing box).
-- **`customFonts`**: Array of font descriptors with relative archive paths:
-  ```json
-  "customFonts": [
-    {
-      "name": "Custom_Futura_Bold_1710000000000",
-      "fileName": "Futura-Bold.ttf",
-      "path": "fonts/Futura-Bold.ttf"
-    }
-  ]
-  ```
+### `template.json` Schema Version 2 Reference
 
-### Version Compatibility & Asset Restoration
-- **Semver Evaluation**: During import, `dSignVersion` is compared against the active application version (`APP_VERSION`). Non-breaking minor updates display an informative notification, while major version differences warn the user of potential incompatibilities.
-- **Dynamic Font Loading**: Custom fonts in `fonts/` are loaded asynchronously as `ArrayBuffer` instances into the browser's `FontFaceSet` via the `FontFace` API and appended to font selection dropdowns. Fallback support is included for legacy Base64 font strings.
-- **Background Image Reconstruction**: Raster assets in `images/` are extracted as `Blob` objects, converted to object URLs for DOM rendering, and preserved as blobs in `state.bgImageBlob` for re-exporting.
+```json
+{
+  "app": "digital-signage-generator",
+  "framework": "CueSmith-Modernist",
+  "dSignVersion": "2.1.0",
+  "schemaVersion": 2,
+  "preset": "landscape",
+  "width": 1920,
+  "height": 1080,
+  "bgImageName": "stage_backdrop.png",
+  "bgImagePath": "images/stage_backdrop.png",
+  "bgSizeMode": "cover",
+  "bgZoom": 1.0,
+  "bgOffsetX": 0,
+  "bgOffsetY": 0,
+  "bgGrayscale": false,
+  "canvasBgColor": "#0b0f19",
+  "enableTint": true,
+  "tintColor": "#000000",
+  "tintOpacity": 40,
+  "layers": [
+    {
+      "id": "layer_1710000000000_abc12",
+      "type": "image",
+      "name": "channel_logo.png",
+      "imagePath": "images/layers/layer_1710000000000_abc12_channel_logo.png",
+      "origWidth": 480,
+      "origHeight": 240,
+      "aspectRatio": 2.0,
+      "width": 360,
+      "height": 180,
+      "scale": 0.75,
+      "lockAspectRatio": true,
+      "x": 85.0,
+      "y": 15.0,
+      "rotation": 0.0,
+      "opacity": 90,
+      "visible": true,
+      "grayscale": false,
+      "enableShadow": true,
+      "shadowColor": "#000000",
+      "shadowBlur": 16,
+      "shadowX": 4,
+      "shadowY": 4
+    },
+    {
+      "id": "layer_1710000000001_def34",
+      "type": "text",
+      "name": "Main Headline",
+      "textContent": "LIVE BROADCAST NOTICE",
+      "textFontFamily": "Archivo",
+      "textWeight": "800",
+      "textAlign": "center",
+      "x": 50.0,
+      "y": 50.0,
+      "rotation": 0.0,
+      "opacity": 100,
+      "visible": true,
+      "textFontSize": 70,
+      "textLineHeight": 1.2,
+      "textLetterSpacing": 1.5,
+      "textColor": "#ffffff",
+      "enableShadow": false,
+      "enableBgBlock": false
+    }
+  ],
+  "activeLayerId": "layer_1710000000000_abc12",
+  "customFonts": []
+}
+```
 
 ---
 
 ## Keyboard Shortcuts & Gestures
 
-| Shortcut | Action |
-| :--- | :--- |
-| <kbd>Cmd / Ctrl</kbd> + <kbd>S</kbd> | Export complete Template ZIP archive |
-| <kbd>Cmd / Ctrl</kbd> + <kbd>O</kbd> | Open / Load Template ZIP archive file picker |
-| <kbd>Click & Drag</kbd> on text | Directly move text layer on canvas |
-| <kbd>Space + Drag</kbd> on canvas | Directly pan background image |
-| <kbd>Arrow Keys</kbd> | Nudge active layer position by 0.5% |
-| <kbd>Shift</kbd> + <kbd>Arrow Keys</kbd> | Nudge active layer position by 5.0% |
-| <kbd>Cmd / Ctrl</kbd> + <kbd>D</kbd> | Duplicate selected text layer |
-| <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Delete selected layer (when not editing an input) |
-| <kbd>S</kbd> | Toggle magnetic center-snap guidelines |
-| <kbd>Cmd / Ctrl</kbd> + <kbd>Z</kbd> | Undo last coordinate or layer mutation |
-| <kbd>Drag & Drop</kbd> files anywhere | Drop ZIP for template, image for background, JSON to load, TTF/OTF for font |
-| <kbd>?</kbd> | Open Shortcuts & Gestures dialog |
-| <kbd>Esc</kbd> | Close dialog / deselect active elements |
+| Shortcut | Context | Action |
+| :--- | :--- | :--- |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>S</kbd> | Global | Export complete Template ZIP archive package |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>O</kbd> | Global | Open Template ZIP archive file picker |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>D</kbd> | Canvas / Layers | Duplicate selected layer with $+3\%$ coordinate offset |
+| <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Canvas / Layers | Delete selected layer (when not editing an input) |
+| <kbd>Cmd / Ctrl</kbd> + <kbd>Z</kbd> | Canvas / Layers | Undo last layer mutation or movement |
+| <kbd>Click & Drag</kbd> | Canvas Text / Image | Directly reposition layer on canvas preview |
+| <kbd>Drag Corner Handle</kbd> | Active Image Layer | Resize layer dimensions (`nw`, `ne`, `se`, `sw`) |
+| <kbd>Drag Rotation Grip</kbd> | Active Image Layer | Rotate layer freely around center origin |
+| <kbd>Shift</kbd> + <kbd>Drag Corner</kbd> | Active Image Layer | Constrain aspect ratio while resizing |
+| <kbd>Shift</kbd> + <kbd>Drag Rotation</kbd> | Active Image Layer | Constrain rotation strictly to $45^\circ$ angle increments |
+| <kbd>Arrow Keys</kbd> | Active Layer | Nudge position by $0.5\%$ |
+| <kbd>Shift</kbd> + <kbd>Arrow Keys</kbd> | Active Layer | Coarse nudge position by $5.0\%$ |
+| <kbd>Alt</kbd> + <kbd>Arrow Keys</kbd> | Active Layer | Precision nudge position by $0.1\%$ |
+| <kbd>Space + Drag</kbd> | Canvas | Directly pan background image position |
+| <kbd>S</kbd> | Canvas | Toggle magnetic center-snap guidelines |
+| <kbd>Drag & Drop</kbd> | Window | Ingest ZIP template, PNG layer, background, JSON, or fonts |
+| <kbd>?</kbd> | Global | Open Shortcuts & Gestures dialog |
+| <kbd>Esc</kbd> | Global | Close dialogs / deselect active elements |
+
+---
+
+## Verification & Testing Suite
+
+D-Sign includes comprehensive automated end-to-end verification suites covering 100% of capabilities:
+
+```bash
+# Run Node.js headless end-to-end test suite (27 tests)
+node tests/test_png_layers_e2e.js
+
+# Run Python 3 verification test suite (47 tests)
+python3 tests/verify_features.py
+```
+
+### Verified Test Areas:
+1. **32-bit Transparent PNG Binary Integrity**: Verification of standard PNG magic signature, IHDR chunks (`colorType=6` RGBA truecolor), zlib IDAT scanline compression/decompression, alpha channel transparency values ($A=0$ to $A=255$), and CRC32 checksums.
+2. **DOM Element Integrity & Modernist Styling**: Verification of all 146 cached element IDs in `const el` against markup, along with all direct manipulation handle classes (`.resize-handle`, `.rotation-stalk`, `.rotation-handle`, `.coords-hud`, `.layer-thumb.checkerboard`).
+3. **Layer Management Operations**: Addition via `addImageLayer`, z-index reordering via `swapLayers`, collision-free duplication via `duplicateActiveLayer`, and deletion via `deleteLayer` with single-layer enforcement.
+4. **Direct Manipulation Trigonometry**: Polar angle calculations via `Math.atan2`, normalization to $[-180^\circ, 180^\circ]$, magnetic snapping within $\pm 3.0^\circ$ and Shift-key snapping, along with un-rotated matrix un-projection for all 4 corners (`nw`, `ne`, `se`, `sw`) and dimension clamping.
+5. **Template ZIP Schema Version 2**: Verification of binary PNG extraction into `images/layers/`, metadata generation in `template.json`, clean unpacking, blob and data URL reconstruction, and live `HTMLImageElement` instantiation.
+6. **Project JSON Serialization**: Round-tripping via `saveProjectData` and `loadProjectData` preserving data URLs and restoring image elements in the cache.
+7. **Backwards Compatibility**: Seamless migration of legacy Schema v1 projects lacking `type`, `x`, `y`, `rotation`, and `opacity`.
 
 ---
 
 ## Getting Started
 
-Because **D-Sign** is a standalone, client-only application, it requires no Node.js runtime or build step:
+Because **D-Sign** is a standalone, client-only application, it requires no Node.js runtime or build step to run in production:
 
 1. Open `index.html` directly in any modern web browser (Chrome, Edge, Safari, Firefox).
-2. Drag and drop a background image or click **Browse** in section **02 Background Image**.
-3. Add or select text layers in section **03 Layers Manager** and drag them directly on the canvas preview to position them.
-4. Save and share complete templates via **Save Template** (<kbd>Cmd / Ctrl</kbd> + <kbd>S</kbd>) or drag any `.zip` template into the browser window.
-5. Click **Export PNG** in the header to download the high-resolution output.
+2. Load a background image or set the canvas solid color in section **02 Background Image & Canvas**.
+3. Add text layers or click **+ Image Layer** in section **03 Layers Manager** to composite transparent PNG graphics.
+4. Drag layers directly on the preview canvas to position them, drag corner handles to resize, and drag the rotation stalk to orient them.
+5. Save and share complete templates via **Save Template** (<kbd>Cmd / Ctrl</kbd> + <kbd>S</kbd>) or drag any `.zip` template into the browser window.
+6. Click **Export PNG** in the header to download the high-resolution broadcast graphic.
