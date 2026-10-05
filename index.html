@@ -2472,7 +2472,7 @@
         // Check if Spacebar is held OR Pan Background tool is active
         if (state.isSpacePressed || state.isPanMode) {
           isPanningCanvas = true;
-          frame.setPointerCapture(e.pointerId);
+          try { frame.setPointerCapture(e.pointerId); } catch (_) {}
           dragStartX = e.clientX;
           dragStartY = e.clientY;
           initialBgOffsetX = state.bgOffsetX;
@@ -2486,19 +2486,30 @@
         if (textBox) {
           const layerId = textBox.dataset.id;
           state.activeLayerId = layerId;
-          renderLayersList();
-          syncActiveLayerControls();
-          updatePreview();
 
-          isDraggingText = true;
-          textBox.setPointerCapture(e.pointerId);
-          textBox.classList.add('dragging');
-
+          // Record coordinates FIRST before any other operations!
           dragStartX = e.clientX;
           dragStartY = e.clientY;
           const activeLayer = getActiveLayer();
-          initialLayerX = activeLayer.textX;
-          initialLayerY = activeLayer.textY;
+          if (!activeLayer) return;
+          initialLayerX = parseFloat(activeLayer.textX) || 50;
+          initialLayerY = parseFloat(activeLayer.textY) || 50;
+
+          isDraggingText = true;
+
+          // Safely set pointer capture on the active box
+          try {
+            textBox.setPointerCapture(e.pointerId);
+          } catch (_) {}
+
+          textBox.classList.add('dragging');
+
+          // Highlight the selected layer without destroying the DOM elements!
+          document.querySelectorAll('.preview-text-box').forEach(b => {
+            b.classList.toggle('active-layer', b.dataset.id === layerId);
+          });
+          renderLayersList();
+          syncActiveLayerControls();
 
           e.preventDefault();
           e.stopPropagation();
@@ -2545,7 +2556,7 @@
           let rawX = initialLayerX + pctDeltaX;
           let rawY = initialLayerY + pctDeltaY;
 
-          // Magnetic Center Snapping (threshold ~1.2%)
+          // Magnetic Center Snapping (threshold ~1.4%)
           let snappedX = false;
           let snappedY = false;
 
@@ -2564,20 +2575,23 @@
           el.snapGuideX.style.display = snappedX ? 'block' : 'none';
           el.snapGuideY.style.display = snappedY ? 'block' : 'none';
 
-          // Clamp
-          activeLayer.textX = Math.round(rawX * 10) / 10;
-          activeLayer.textY = Math.round(rawY * 10) / 10;
+          // Clamp within safe viewport bounds (0% to 100%)
+          rawX = Math.max(0, Math.min(100, Math.round(rawX * 10) / 10));
+          rawY = Math.max(0, Math.min(100, Math.round(rawY * 10) / 10));
+
+          activeLayer.textX = rawX;
+          activeLayer.textY = rawY;
 
           el.textX.value = activeLayer.textX;
           el.textXVal.textContent = activeLayer.textX.toFixed(1) + '%';
           el.textY.value = activeLayer.textY;
           el.textYVal.textContent = activeLayer.textY.toFixed(1) + '%';
 
-          // Fast DOM update for active layer box position
+          // Direct DOM style update on the active text box
           const activeBox = el.previewTextContainer.querySelector(`.preview-text-box[data-id="${activeLayer.id}"]`);
           if (activeBox) {
-            activeBox.style.left = `calc(${activeLayer.textX} * 1%)`;
-            activeBox.style.top = `calc(${activeLayer.textY} * 1%)`;
+            activeBox.style.left = `${activeLayer.textX}%`;
+            activeBox.style.top = `${activeLayer.textY}%`;
 
             const hud = activeBox.querySelector('.coords-hud');
             if (hud) hud.textContent = `X: ${activeLayer.textX.toFixed(1)}%  Y: ${activeLayer.textY.toFixed(1)}%`;
@@ -2586,18 +2600,26 @@
       });
 
       // Pointer Up / Cancel
-      const endDrag = () => {
+      const endDrag = (e) => {
         if (isDraggingText) {
           pushHistorySnapshot();
           isDraggingText = false;
           el.snapGuideX.style.display = 'none';
           el.snapGuideY.style.display = 'none';
-          document.querySelectorAll('.preview-text-box.dragging').forEach(b => b.classList.remove('dragging'));
+          document.querySelectorAll('.preview-text-box.dragging').forEach(b => {
+            b.classList.remove('dragging');
+            if (e && e.pointerId) {
+              try { b.releasePointerCapture(e.pointerId); } catch (_) {}
+            }
+          });
           updatePreview();
         }
         if (isPanningCanvas) {
           pushHistorySnapshot();
           isPanningCanvas = false;
+          if (e && e.pointerId) {
+            try { el.previewFrame.releasePointerCapture(e.pointerId); } catch (_) {}
+          }
           el.previewFrame.style.cursor = state.isPanMode || state.isSpacePressed ? 'grab' : 'default';
         }
       };
@@ -2832,8 +2854,8 @@
         box.className = 'preview-text-box' + (layer.id === state.activeLayerId ? ' active-layer' : '');
         box.dataset.id = layer.id;
 
-        box.style.left = `calc(${layer.textX} * 1%)`;
-        box.style.top = `calc(${layer.textY} * 1%)`;
+        box.style.left = `${layer.textX}%`;
+        box.style.top = `${layer.textY}%`;
 
         let tx = '-50%';
         if (layer.textAlign === 'left') tx = '0%';
@@ -2868,12 +2890,15 @@
           box.style.textShadow = 'none';
         }
 
-        box.textContent = layer.textContent;
+        const textSpan = document.createElement('span');
+        textSpan.className = 'layer-text-render';
+        textSpan.textContent = layer.textContent;
+        box.appendChild(textSpan);
 
         // Active HUD badge showing live percentage coordinates
         const hud = document.createElement('div');
         hud.className = 'coords-hud tn';
-        hud.textContent = `X: ${layer.textX.toFixed(1)}%  Y: ${layer.textY.toFixed(1)}%`;
+        hud.textContent = `X: ${parseFloat(layer.textX).toFixed(1)}%  Y: ${parseFloat(layer.textY).toFixed(1)}%`;
         box.appendChild(hud);
 
         el.previewTextContainer.appendChild(box);
