@@ -116,13 +116,29 @@ html_path = os.path.join(os.path.dirname(__file__), "..", "index.html")
 with open(html_path, "r", encoding="utf-8") as f:
     html_content = f.read()
 
-# Extract cached element IDs in 'const el = {'
-el_match = re.search(r"const el = \{([\s\S]*?)\n    \};", html_content)
-check("const el DOM cache found in index.html", bool(el_match))
-el_block = el_match.group(1)
+dom_path = os.path.join(os.path.dirname(__file__), "..", "js", "dom.js")
+if os.path.exists(dom_path):
+    with open(dom_path, "r", encoding="utf-8") as f:
+        dom_content = f.read()
+else:
+    dom_content = html_content
 
-cached_ids = re.findall(r"document\.getElementById\(['\"]([^'\"]+)['\"]\)", el_block)
-check(f"Exactly 146 element IDs cached in const el (found {len(cached_ids)})", len(cached_ids) == 146)
+css_dir = os.path.join(os.path.dirname(__file__), "..", "css")
+css_content = ""
+if os.path.exists(css_dir):
+    for cf in os.listdir(css_dir):
+        if cf.endswith(".css"):
+            with open(os.path.join(css_dir, cf), "r", encoding="utf-8") as f:
+                css_content += f.read() + "\n"
+else:
+    css_content = html_content
+
+# Extract cached element IDs in 'const el = {' or 'export const el = {'
+el_match = re.search(r"(?:export\s+)?const el = \{([\s\S]*?)\n\s*\};", dom_content)
+check("const el DOM cache found in dom.js / index.html", bool(el_match))
+
+cached_ids = re.findall(r"document\.getElementById\(['\"]([^'\"]+)['\"]\)", dom_content)
+check(f"Exactly 169 element IDs cached in const el (found {len(cached_ids)})", len(cached_ids) == 169)
 
 missing_ids = []
 for cid in cached_ids:
@@ -130,7 +146,7 @@ for cid in cached_ids:
     if not re.search(pattern, html_content):
         missing_ids.append(cid)
 
-check(f"All 146 cached element IDs exist in HTML markup (missing: {missing_ids})", len(missing_ids) == 0)
+check(f"All 169 cached element IDs exist in HTML markup (missing: {missing_ids})", len(missing_ids) == 0)
 
 # Check CSS classes
 required_css = [
@@ -141,7 +157,7 @@ required_css = [
     ".layer-thumb.checkerboard"
 ]
 for cls in required_css:
-    check(f"CSS handle class '{cls}' defined in stylesheet", cls in html_content)
+    check(f"CSS handle class '{cls}' defined in stylesheet", cls in css_content)
 
 # -----------------------------------------------------------------------------
 # 3. Direct Manipulation Math & Magnetic Angle Snapping
