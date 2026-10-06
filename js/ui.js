@@ -10,7 +10,21 @@ import { updatePreview } from './canvas.js';
 
 export function syncActiveLayerControls() {
   const layer = getActiveLayer();
-  if (!layer) return;
+  if (!layer) {
+    if (el.activeLayerTag) {
+      el.activeLayerTag.textContent = 'NO SELECTION';
+      el.activeLayerTag.className = 'tag tag-neutral tn';
+    }
+    if (el.textX) el.textX.value = 50;
+    if (el.textXVal) el.textXVal.textContent = '—';
+    if (el.textXInput) el.textXInput.value = '';
+    if (el.textY) el.textY.value = 50;
+    if (el.textYVal) el.textYVal.textContent = '—';
+    if (el.textYInput) el.textYInput.value = '';
+    if (el.textLayerControls) el.textLayerControls.classList.add('hidden');
+    if (el.imageLayerControls) el.imageLayerControls.classList.add('hidden');
+    return;
+  }
 
   // Common layer position coordinates (Pos X, Pos Y)
   const posX = parseFloat(layer.x !== undefined ? layer.x : (layer.textX !== undefined ? layer.textX : 50.0)) || 50.0;

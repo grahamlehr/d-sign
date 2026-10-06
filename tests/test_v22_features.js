@@ -58,12 +58,20 @@ function createSandbox() {
       dispatchEvent: function(evt) {
         evt = evt || {};
         if (!evt.target) evt.target = this;
+        if (!evt.preventDefault) evt.preventDefault = () => {};
+        if (!evt.stopPropagation) evt.stopPropagation = () => {};
         (listeners[evt.type] || []).forEach(cb => cb(evt));
       },
       click: function() {
         (listeners['click'] || []).forEach(cb => cb({ target: this }));
       },
-      querySelector: () => createMockEl('div'),
+      querySelector: function(sel) {
+        if (sel && sel.startsWith('.')) {
+          const cls = sel.slice(1);
+          return children.find(c => c.className && c.className.split(' ').includes(cls)) || null;
+        }
+        return children[0] || null;
+      },
       querySelectorAll: () => [],
       closest: function() { return this; },
       getBoundingClientRect: () => ({ top: 0, left: 0, width: 800, height: 450, right: 800, bottom: 450 }),
@@ -121,6 +129,7 @@ function createSandbox() {
   const context = {
     window: null,
     document: mockDoc,
+    createMockEl,
     localStorage: {
       getItem: () => 'true',
       setItem: () => {}
@@ -514,6 +523,92 @@ async function runTests() {
     ctx.updatePreview();
     assert.strictEqual(ctx.state.canvasTransparent, true);
     console.log('  ✓ [PASS] Transparent canvas mode active and applied to preview');
+  }
+
+  // --------------------------------------------------------------------------
+  // 8. Layer Deselection Suite
+  // --------------------------------------------------------------------------
+  console.log('\n--- 8. LAYER DESELECTION SUITE ---');
+  {
+    // Single select l1
+    ctx.selectLayer('l1', false);
+    assert.strictEqual(ctx.state.activeLayerId, 'l1');
+    assert.strictEqual(ctx.getActiveLayer().id, 'l1');
+
+    // Deselect via selectLayer(null) or deselectLayers()
+    ctx.deselectLayers();
+    assert.strictEqual(ctx.state.activeLayerId, null);
+    assert.deepStrictEqual([...ctx.state.selectedLayerIds], []);
+    assert.strictEqual(ctx.getActiveLayer(), null);
+    console.log('  ✓ [PASS] deselectLayers clears activeLayerId and selectedLayerIds');
+
+    // syncActiveLayerControls sets NO SELECTION
+    ctx.syncActiveLayerControls();
+    assert.strictEqual(ctx.el.activeLayerTag.textContent, 'NO SELECTION');
+    console.log('  ✓ [PASS] syncActiveLayerControls shows NO SELECTION badge when deselected');
+
+    // Multi-select toggle off
+    ctx.selectLayer('l1', false);
+    ctx.selectLayer('l2', true);
+    assert.deepStrictEqual([...ctx.state.selectedLayerIds], ['l1', 'l2']);
+
+    // Toggle off l2
+    ctx.selectLayer('l2', true);
+    assert.deepStrictEqual([...ctx.state.selectedLayerIds], ['l1']);
+    assert.strictEqual(ctx.state.activeLayerId, 'l1');
+    console.log('  ✓ [PASS] Shift/Multi-select toggle removes layer from selection');
+
+    // Toggle off last remaining layer deselects completely
+    ctx.selectLayer('l1', true);
+    assert.strictEqual(ctx.state.activeLayerId, null);
+    assert.deepStrictEqual([...ctx.state.selectedLayerIds], []);
+    console.log('  ✓ [PASS] Toggling off the last remaining selected layer completely deselects');
+  }
+
+  // --------------------------------------------------------------------------
+  // 9. Double-Click Inline Text Editing Suite
+  // --------------------------------------------------------------------------
+  console.log('\n--- 9. DOUBLE-CLICK INLINE TEXT EDITING SUITE ---');
+  {
+    const textLayer = ctx.state.layers.find(l => l.type === 'text') || ctx.state.layers[0];
+    const mockBox = ctx.createMockEl('div');
+    mockBox.dataset.id = textLayer.id;
+    const textSpan = ctx.createMockEl('span');
+    textSpan.className = 'layer-text-render';
+    textSpan.textContent = textLayer.textContent || 'Hello';
+    mockBox.appendChild(textSpan);
+
+    ctx.openInlineTextEditor(textLayer.id, mockBox);
+    const textarea = mockBox.children.find(c => c.className === 'inline-text-editor');
+    assert(textarea, 'Inline textarea created inside text box');
+    console.log('  ✓ [PASS] openInlineTextEditor appends textarea with inline-text-editor class');
+
+    // Typing inside textarea
+    textarea.value = 'UPDATED TITLE';
+    textarea.dispatchEvent({ type: 'input' });
+    assert.strictEqual(textLayer.textContent, 'UPDATED TITLE');
+    console.log('  ✓ [PASS] Typing inside inline textarea updates layer text in real-time');
+
+    // Commit via Enter
+    textarea.dispatchEvent({ type: 'keydown', key: 'Enter', metaKey: true });
+    assert.strictEqual(mockBox.children.find(c => c.className === 'inline-text-editor'), undefined);
+    console.log('  ✓ [PASS] Enter commits and removes inline editor');
+  }
+
+  // --------------------------------------------------------------------------
+  // 10. JSON Buttons Removal Verification
+  // --------------------------------------------------------------------------
+  console.log('\n--- 10. JSON BUTTONS REMOVAL VERIFICATION ---');
+  {
+    const htmlPath = path.join(__dirname, '..', 'index.html');
+    const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+    assert(!htmlContent.includes('id="load-btn"'), 'load-btn removed from index.html');
+    assert(!htmlContent.includes('id="save-btn"'), 'save-btn removed from index.html');
+    assert(!htmlContent.includes('id="load-project-input"'), 'load-project-input removed from index.html');
+    assert.strictEqual(ctx.el.loadBtn, undefined);
+    assert.strictEqual(ctx.el.saveBtn, undefined);
+    assert.strictEqual(ctx.el.loadProjectInput, undefined);
+    console.log('  ✓ [PASS] Load JSON and Save JSON buttons completely removed from markup and DOM cache');
   }
 
   console.log('\n======================================================================');

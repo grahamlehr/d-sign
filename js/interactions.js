@@ -2,7 +2,7 @@
    Canvas Interaction Suite & File Drag-and-Drop Ingestion
    ========================================================================== */
 
-import { state, pushHistorySnapshot, imageElementCache, selectLayer } from './state.js';
+import { state, pushHistorySnapshot, imageElementCache, selectLayer, deselectLayers } from './state.js';
 import { el, showToast } from './dom.js';
 import { getActiveLayer, renderLayersList, addImageLayer, updateActiveLayerProp } from './layers.js';
 import { syncActiveLayerControls } from './ui.js';
@@ -10,6 +10,11 @@ import { updatePreview } from './canvas.js';
 import { loadProjectData, loadTemplateZip } from './storage.js';
 
 let isDraggingText = false;
+let pendingTextDrag = false;
+let pendingDragBox = null;
+let pendingDragPointerId = null;
+let lastTextClickTime = 0;
+let lastTextClickId = null;
 let isRotatingLayer = false;
 let isResizingLayer = false;
 let isPanningCanvas = false;
@@ -49,6 +54,11 @@ export function initCanvasInteractions() {
 
   // Pointer Down on Canvas, Handles, or Layer
   frame.addEventListener('pointerdown', (e) => {
+    // Ignore clicks inside an active inline text editor
+    if (e.target.closest('.inline-text-editor')) {
+      return;
+    }
+
     // 0. Interactive Guideline Dragging
     const guideEl = e.target.closest('.canvas-guide');
     if (guideEl) {
@@ -149,8 +159,23 @@ export function initCanvasInteractions() {
     const textBox = e.target.closest('.preview-text-box');
     if (textBox) {
       const layerId = textBox.dataset.id;
-      const isMulti = e.shiftKey || e.metaKey || e.ctrlKey;
+      const layer = state.layers.find(l => l.id === layerId);
+      const now = Date.now();
 
+      // Double-click detection for inline text editing
+      if (layer && layer.type === 'text') {
+        if (now - lastTextClickTime < 350 && lastTextClickId === layerId) {
+          lastTextClickTime = 0;
+          lastTextClickId = null;
+          pendingTextDrag = false;
+          openInlineTextEditor(layerId, textBox);
+          return;
+        }
+      }
+      lastTextClickTime = now;
+      lastTextClickId = layerId;
+
+      const isMulti = e.shiftKey || e.metaKey || e.ctrlKey;
       if (isMulti) {
         selectLayer(layerId, true);
       } else if (!state.selectedLayerIds || !state.selectedLayerIds.includes(layerId)) {
@@ -161,8 +186,9 @@ export function initCanvasInteractions() {
 
       dragStartX = e.clientX;
       dragStartY = e.clientY;
-      const activeLayer = getActiveLayer();
-      if (!activeLayer) return;
+      pendingTextDrag = true;
+      pendingDragBox = textBox;
+      pendingDragPointerId = e.pointerId;
 
       initialLayerPositions.clear();
       (state.selectedLayerIds || [layerId]).forEach(id => {
@@ -175,14 +201,6 @@ export function initCanvasInteractions() {
         }
       });
 
-      isDraggingText = true;
-
-      try {
-        textBox.setPointerCapture(e.pointerId);
-      } catch (_) {}
-
-      textBox.classList.add('dragging');
-
       document.querySelectorAll('.preview-text-box').forEach(b => {
         const bid = b.dataset.id;
         b.classList.toggle('active-layer', bid === state.activeLayerId);
@@ -190,10 +208,14 @@ export function initCanvasInteractions() {
       });
       renderLayersList();
       syncActiveLayerControls();
-
-      e.preventDefault();
-      e.stopPropagation();
+      return;
     }
+
+    // 5. Click on Empty Canvas Background -> Deselect
+    deselectLayers();
+    renderLayersList();
+    syncActiveLayerControls();
+    updatePreview();
   });
 
   // Pointer Move
@@ -402,6 +424,17 @@ export function initCanvasInteractions() {
       return;
     }
 
+    // Convert pending drag to active drag once movement exceeds threshold
+    if (pendingTextDrag && !isDraggingText) {
+      if (Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) > 4) {
+        isDraggingText = true;
+        if (pendingDragBox) {
+          pendingDragBox.classList.add('dragging');
+          try { pendingDragBox.setPointerCapture(pendingDragPointerId); } catch (_) {}
+        }
+      }
+    }
+
     // Dragging Layer (Text or Image)
     if (isDraggingText) {
       const activeLayer = getActiveLayer();
@@ -573,6 +606,10 @@ export function initCanvasInteractions() {
       needUpdate = true;
     }
 
+    pendingTextDrag = false;
+    pendingDragBox = null;
+    pendingDragPointerId = null;
+
     if (isDraggingText) {
       pushHistorySnapshot();
       isDraggingText = false;
@@ -600,6 +637,7 @@ export function initCanvasInteractions() {
 
     if (needUpdate) {
       updatePreview();
+      syncActiveLayerControls();
     }
   };
 
@@ -611,66 +649,7 @@ export function initCanvasInteractions() {
     const textBox = e.target.closest('.preview-text-box');
     if (!textBox) return;
     const layerId = textBox.dataset.id;
-    const layer = state.layers.find(l => l.id === layerId);
-    if (!layer || layer.type !== 'text') return;
-
-    if (textBox.querySelector('.inline-text-editor')) return;
-
-    const textarea = document.createElement('textarea');
-    textarea.className = 'inline-text-editor';
-    textarea.value = layer.textContent || '';
-    textarea.style.cssText = `
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      min-width: 140px;
-      min-height: 40px;
-      background: rgba(0, 0, 0, 0.75);
-      color: #ffffff;
-      border: 2px solid var(--color-accent);
-      font: inherit;
-      font-size: inherit;
-      font-weight: inherit;
-      line-height: inherit;
-      letter-spacing: inherit;
-      text-align: inherit;
-      padding: 4px;
-      resize: none;
-      outline: none;
-      z-index: 100;
-      border-radius: 0;
-      box-sizing: border-box;
-    `;
-
-    const commit = () => {
-      if (!textarea.parentElement) return;
-      const newVal = textarea.value;
-      textarea.remove();
-      pushHistorySnapshot();
-      layer.textContent = newVal;
-      if (el.textContent && state.activeLayerId === layerId) {
-        el.textContent.value = newVal;
-      }
-      updatePreview();
-    };
-
-    textarea.addEventListener('keydown', (evt) => {
-      if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
-        evt.preventDefault();
-        commit();
-      } else if (evt.key === 'Escape') {
-        evt.preventDefault();
-        textarea.remove();
-        updatePreview();
-      }
-      evt.stopPropagation();
-    });
-
-    textarea.addEventListener('blur', commit);
-    textBox.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
+    openInlineTextEditor(layerId, textBox);
   });
 
   // Canvas Zoom on Wheel with Ctrl / Alt / Meta (up to 500%)
@@ -688,6 +667,15 @@ export function initCanvasInteractions() {
         el.previewFrame.style.transform = `translate(${state.viewportPanX || 0}px, ${state.viewportPanY || 0}px) scale(${newZoom / 100})`;
       }
     }, { passive: false });
+
+    el.previewPane.addEventListener('pointerdown', (e) => {
+      if (e.target === el.previewPane || e.target.id === 'preview-container') {
+        deselectLayers();
+        renderLayersList();
+        syncActiveLayerControls();
+        updatePreview();
+      }
+    });
   }
 }
 
@@ -913,4 +901,100 @@ export function initGlobalFileDragAndDrop() {
       showToast('Unsupported file type. Use .dsign, .zip, JPG, PNG, JSON, or TTF/OTF.');
     }
   });
+}
+
+/**
+ * Open inline textarea editor directly over active text layer on canvas
+ */
+export function openInlineTextEditor(layerId, textBox) {
+  if (!textBox) {
+    textBox = document.querySelector(`.preview-text-box[data-id="${layerId}"]`);
+  }
+  if (!textBox) return;
+  const layer = state.layers.find(l => l.id === layerId);
+  if (!layer || layer.type !== 'text') return;
+
+  if (textBox.querySelector('.inline-text-editor')) return;
+
+  const textSpan = textBox.querySelector('.layer-text-render');
+  if (textSpan) textSpan.style.visibility = 'hidden';
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'inline-text-editor';
+  textarea.value = layer.textContent || '';
+  textarea.style.cssText = `
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 140px;
+    min-height: 44px;
+    background: rgba(22, 21, 20, 0.94);
+    color: #ffffff;
+    border: 2px solid var(--color-accent);
+    font: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    padding: 4px;
+    resize: none;
+    outline: none;
+    z-index: 100;
+    border-radius: 0;
+    box-sizing: border-box;
+  `;
+
+  const stop = (evt) => evt.stopPropagation();
+  textarea.addEventListener('pointerdown', stop);
+  textarea.addEventListener('mousedown', stop);
+  textarea.addEventListener('click', stop);
+  textarea.addEventListener('dblclick', stop);
+
+  textarea.addEventListener('input', () => {
+    layer.textContent = textarea.value;
+    if (el.textContent && state.activeLayerId === layerId) {
+      el.textContent.value = textarea.value;
+    }
+  });
+
+  let committed = false;
+  const commit = () => {
+    if (committed) return;
+    committed = true;
+    const newVal = textarea.value;
+    textarea.remove();
+    if (textSpan) textSpan.style.visibility = '';
+    pushHistorySnapshot();
+    layer.textContent = newVal;
+    if (el.textContent && state.activeLayerId === layerId) {
+      el.textContent.value = newVal;
+    }
+    renderLayersList();
+    updatePreview();
+  };
+
+  textarea.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
+      evt.preventDefault();
+      commit();
+    } else if (evt.key === 'Escape') {
+      evt.preventDefault();
+      committed = true;
+      textarea.remove();
+      if (textSpan) textSpan.style.visibility = '';
+      updatePreview();
+    }
+    evt.stopPropagation();
+  });
+
+  textarea.addEventListener('blur', commit);
+
+  textBox.appendChild(textarea);
+  setTimeout(() => {
+    textarea.focus();
+    textarea.select();
+  }, 10);
 }
