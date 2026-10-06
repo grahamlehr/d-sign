@@ -612,7 +612,7 @@ async function runAllTests() {
 
   const { context, html } = createBrowserSandbox();
 
-  it('Should verify that all 169 cached element IDs in "const el" exist in index.html markup', () => {
+  it('Should verify that all 166 cached element IDs in "const el" exist in index.html markup', () => {
     let searchTarget = html;
     const elMatch = html.match(/const el = \{([\s\S]*?)\n\s*\};/);
     if (!elMatch) {
@@ -626,7 +626,7 @@ async function runAllTests() {
       ids.push(m[1]);
     }
 
-    assert.strictEqual(ids.length, 169, `Expected 169 cached IDs, found ${ids.length}`);
+    assert.strictEqual(ids.length, 166, `Expected 166 cached IDs, found ${ids.length}`);
     const missing = [];
     for (const id of ids) {
       const p = new RegExp(`id=['"]${id}['"]`);

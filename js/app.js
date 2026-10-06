@@ -13,7 +13,8 @@ import {
   addNewDesign,
   duplicateActiveDesign,
   deleteActiveDesign,
-  switchActiveDesign
+  switchActiveDesign,
+  deselectLayers
 } from './state.js';
 import { el, initDOM, showToast } from './dom.js';
 import { hexToRgba, syncColorControls } from './utils.js';
@@ -963,29 +964,7 @@ export function setupEventHandlers() {
     });
   }
 
-  // Save, Load, Export
-  if (el.saveBtn) el.saveBtn.addEventListener('click', saveProjectData);
-  if (el.loadBtn && el.loadProjectInput) {
-    el.loadBtn.addEventListener('click', () => el.loadProjectInput.click());
-    el.loadProjectInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const data = JSON.parse(evt.target.result);
-          loadProjectData(data);
-          showToast('Project loaded');
-        } catch (err) {
-          showToast('Invalid JSON: ' + err.message);
-        }
-      };
-      reader.readAsText(file);
-      el.loadProjectInput.value = '';
-    });
-  }
-
-  // Template Archive (.zip) Save & Load
+  // Template Archive (.dsign / .zip) Save & Load
   if (el.saveTemplateBtn) {
     el.saveTemplateBtn.addEventListener('click', exportTemplateZip);
   }
@@ -1013,9 +992,16 @@ export function setupEventHandlers() {
       return;
     }
 
-    // Escape closes modal / deselects
-    if (e.key === 'Escape' && el.shortcutsDialog) {
-      el.shortcutsDialog.classList.remove('open');
+    // Escape closes modal / deselects layers
+    if (e.key === 'Escape') {
+      if (el.shortcutsDialog && el.shortcutsDialog.classList.contains('open')) {
+        el.shortcutsDialog.classList.remove('open');
+        return;
+      }
+      deselectLayers();
+      renderLayersList();
+      syncActiveLayerControls();
+      updatePreview();
       return;
     }
 

@@ -3,7 +3,7 @@
    ========================================================================== */
 
 import { showToast } from './dom.js';
-import { syncAllUIControls, updateCanvasDimensions } from './ui.js';
+import { syncAllUIControls, syncActiveLayerControls, updateCanvasDimensions } from './ui.js';
 import { updatePreview } from './canvas.js';
 
 export const state = {
@@ -487,10 +487,21 @@ export function deleteActiveDesign(id) {
 }
 
 /**
- * Select a layer, supporting single selection and multi-selection (Shift/Cmd click)
+ * Deselect all layers
+ */
+export function deselectLayers() {
+  state.activeLayerId = null;
+  state.selectedLayerIds = [];
+}
+
+/**
+ * Select a layer, supporting single selection, multi-selection (Shift/Cmd click), and deselection
  */
 export function selectLayer(id, isMulti = false) {
-  if (!id) return;
+  if (!id) {
+    deselectLayers();
+    return;
+  }
   if (!state.selectedLayerIds) state.selectedLayerIds = [];
   if (!isMulti) {
     state.activeLayerId = id;
@@ -498,11 +509,11 @@ export function selectLayer(id, isMulti = false) {
   } else {
     const idx = state.selectedLayerIds.indexOf(id);
     if (idx !== -1) {
-      if (state.selectedLayerIds.length > 1) {
-        state.selectedLayerIds.splice(idx, 1);
-        if (state.activeLayerId === id) {
-          state.activeLayerId = state.selectedLayerIds[state.selectedLayerIds.length - 1];
-        }
+      state.selectedLayerIds.splice(idx, 1);
+      if (state.activeLayerId === id) {
+        state.activeLayerId = state.selectedLayerIds.length > 0
+          ? state.selectedLayerIds[state.selectedLayerIds.length - 1]
+          : null;
       }
     } else {
       state.selectedLayerIds.push(id);
@@ -513,12 +524,12 @@ export function selectLayer(id, isMulti = false) {
 
 /**
  * Alignment Suite for multiple selected layers
- * Types: 'left', 'center-x', 'right', 'top', 'middle-y', 'bottom'
+ * Types: 'left', 'centerX'/'center-x', 'right', 'top', 'middleY'/'middle-y', 'bottom'
  */
 export function alignSelectedLayers(type, relativeToCanvas = false) {
   const ids = state.selectedLayerIds && state.selectedLayerIds.length > 0
     ? state.selectedLayerIds
-    : [state.activeLayerId];
+    : (state.activeLayerId ? [state.activeLayerId] : []);
   if (!ids || ids.length === 0) return;
 
   const targetLayers = state.layers.filter(l => ids.includes(l.id));
@@ -537,86 +548,102 @@ export function alignSelectedLayers(type, relativeToCanvas = false) {
       w = layer.width !== undefined ? layer.width : ((layer.origWidth || 400) * (layer.scale || 1.0));
       h = layer.height !== undefined ? layer.height : ((layer.origHeight || 400) * (layer.scale || 1.0));
     } else {
-      // Approximate or query DOM for text layer
-      if (typeof document !== 'undefined') {
-        const elBox = document.querySelector(`.preview-text-box[data-id="${layer.id}"]`);
-        if (elBox && elBox.offsetWidth) {
-          const pf = document.getElementById('preview-frame');
-          const scale = pf ? (parseFloat(pf.style.getPropertyValue('--scale-factor')) || 1) : 1;
-          w = elBox.offsetWidth / scale;
-          h = elBox.offsetHeight / scale;
-        } else {
-          w = (layer.textFontSize || 70) * (layer.textContent ? layer.textContent.length * 0.5 : 5);
-          h = (layer.textFontSize || 70) * 1.5;
-        }
+      if (layer.width && layer.height) {
+        w = layer.width;
+        h = layer.height;
+      } else {
+        const textLen = (layer.textContent && layer.textContent.length) ? layer.textContent.length : 10;
+        const fs = layer.textFontSize || 70;
+        w = fs * textLen * 0.55;
+        h = fs * (layer.textLineHeight || 1.2);
       }
     }
     return { w, h };
   };
 
-  if (targetLayers.length === 1 || relativeToCanvas) {
-    // Align relative to canvas bounds
-    targetLayers.forEach(layer => {
-      const { w, h } = getDims(layer);
-      if (type === 'left') layer.x = ((w / 2) / cWidth) * 100;
-      else if (type === 'center-x' || type === 'centerX') layer.x = 50.0;
-      else if (type === 'right') layer.x = ((cWidth - w / 2) / cWidth) * 100;
-      else if (type === 'top') layer.y = ((h / 2) / cHeight) * 100;
-      else if (type === 'middle-y' || type === 'middleY') layer.y = 50.0;
-      else if (type === 'bottom') layer.y = ((cHeight - h / 2) / cHeight) * 100;
+  // Compute visual bounds for each target layer
+  const items = targetLayers.map(layer => {
+    const curX = parseFloat(layer.x !== undefined ? layer.x : layer.textX) || 50.0;
+    const curY = parseFloat(layer.y !== undefined ? layer.y : layer.textY) || 50.0;
+    const { w, h } = getDims(layer);
 
-      if (layer.type === 'text') {
-        layer.textX = layer.x;
-        layer.textY = layer.y;
-      }
-    });
-  } else {
-    // Align relative to shared selection bounding box
-    const boxes = targetLayers.map(layer => {
-      const { w, h } = getDims(layer);
-      const cx = (layer.x / 100) * cWidth;
-      const cy = (layer.y / 100) * cHeight;
-      return {
-        layer,
-        w,
-        h,
-        cx,
-        cy,
-        left: cx - w / 2,
-        right: cx + w / 2,
-        top: cy - h / 2,
-        bottom: cy + h / 2
-      };
-    });
+    const wPct = (w / cWidth) * 100;
+    const hPct = (h / cHeight) * 100;
 
-    const minLeft = Math.min(...boxes.map(b => b.left));
-    const maxRight = Math.max(...boxes.map(b => b.right));
-    const minTop = Math.min(...boxes.map(b => b.top));
-    const maxBottom = Math.max(...boxes.map(b => b.bottom));
-    const midX = (minLeft + maxRight) / 2;
-    const midY = (minTop + maxBottom) / 2;
+    let vLeft, vRight, vMidX;
+    if (layer.type === 'text' && layer.textAlign === 'left') {
+      vLeft = curX;
+      vRight = curX + wPct;
+      vMidX = curX + wPct / 2;
+    } else if (layer.type === 'text' && layer.textAlign === 'right') {
+      vLeft = curX - wPct;
+      vRight = curX;
+      vMidX = curX - wPct / 2;
+    } else {
+      // center or image
+      vLeft = curX - wPct / 2;
+      vRight = curX + wPct / 2;
+      vMidX = curX;
+    }
+    const vTop = curY - hPct / 2;
+    const vBottom = curY + hPct / 2;
+    const vMidY = curY;
 
-    boxes.forEach(b => {
-      let newCx = b.cx;
-      let newCy = b.cy;
+    return {
+      layer,
+      curX,
+      curY,
+      w,
+      h,
+      vLeft,
+      vRight,
+      vTop,
+      vBottom,
+      vMidX,
+      vMidY
+    };
+  });
 
-      if (type === 'left') newCx = minLeft + b.w / 2;
-      else if (type === 'center-x' || type === 'centerX') newCx = midX;
-      else if (type === 'right') newCx = maxRight - b.w / 2;
-      else if (type === 'top') newCy = minTop + b.h / 2;
-      else if (type === 'middle-y' || type === 'middleY') newCy = midY;
-      else if (type === 'bottom') newCy = maxBottom - b.h / 2;
+  const minLeft = Math.min(...items.map(i => i.vLeft));
+  const maxRight = Math.max(...items.map(i => i.vRight));
+  const minTop = Math.min(...items.map(i => i.vTop));
+  const maxBottom = Math.max(...items.map(i => i.vBottom));
+  const groupMidX = (minLeft + maxRight) / 2;
+  const groupMidY = (minTop + maxBottom) / 2;
 
-      b.layer.x = (newCx / cWidth) * 100;
-      b.layer.y = (newCy / cHeight) * 100;
-      if (b.layer.type === 'text') {
-        b.layer.textX = b.layer.x;
-        b.layer.textY = b.layer.y;
-      }
-    });
-  }
+  const isCanvasRel = targetLayers.length === 1 || relativeToCanvas;
+  const targetLeft = isCanvasRel ? 0 : minLeft;
+  const targetRight = isCanvasRel ? 100 : maxRight;
+  const targetCenterX = isCanvasRel ? 50 : groupMidX;
+  const targetTop = isCanvasRel ? 0 : minTop;
+  const targetBottom = isCanvasRel ? 100 : maxBottom;
+  const targetCenterY = isCanvasRel ? 50 : groupMidY;
+
+  items.forEach(item => {
+    let deltaX = 0;
+    let deltaY = 0;
+
+    if (type === 'left') deltaX = targetLeft - item.vLeft;
+    else if (type === 'center-x' || type === 'centerX') deltaX = targetCenterX - item.vMidX;
+    else if (type === 'right') deltaX = targetRight - item.vRight;
+    else if (type === 'top') deltaY = targetTop - item.vTop;
+    else if (type === 'middle-y' || type === 'middleY') deltaY = targetCenterY - item.vMidY;
+    else if (type === 'bottom') deltaY = targetBottom - item.vBottom;
+
+    if (deltaX !== 0) {
+      const newX = Math.round((item.curX + deltaX) * 10) / 10;
+      item.layer.x = newX;
+      item.layer.textX = newX;
+    }
+    if (deltaY !== 0) {
+      const newY = Math.round((item.curY + deltaY) * 10) / 10;
+      item.layer.y = newY;
+      item.layer.textY = newY;
+    }
+  });
 
   updatePreview();
+  syncActiveLayerControls();
   showToast(`Layers aligned: ${type}`);
 }
 

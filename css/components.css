@@ -428,6 +428,12 @@ input[type="color"]::-webkit-color-swatch {
   background: var(--color-surface);
 }
 
+.layer-card.multi-selected {
+  border-color: var(--color-accent);
+  border-left: 2px dashed var(--color-accent);
+  background: var(--color-surface);
+}
+
 .layer-card.dragging {
   opacity: 0.35;
   background: var(--color-accent-100);

@@ -10,9 +10,6 @@ export const el = {
   shortcutsDialog: null,
   closeDialogBtn: null,
   confirmDialogBtn: null,
-  loadBtn: null,
-  loadProjectInput: null,
-  saveBtn: null,
   loadTemplateBtn: null,
   loadTemplateInput: null,
   saveTemplateBtn: null,
@@ -227,9 +224,6 @@ export function initDOM() {
   el.shortcutsDialog = document.getElementById('shortcuts-dialog');
   el.closeDialogBtn = document.getElementById('close-dialog-btn');
   el.confirmDialogBtn = document.getElementById('confirm-dialog-btn');
-  el.loadBtn = document.getElementById('load-btn');
-  el.loadProjectInput = document.getElementById('load-project-input');
-  el.saveBtn = document.getElementById('save-btn');
   el.loadTemplateBtn = document.getElementById('load-template-btn');
   el.loadTemplateInput = document.getElementById('load-template-input');
   el.saveTemplateBtn = document.getElementById('save-template-btn');

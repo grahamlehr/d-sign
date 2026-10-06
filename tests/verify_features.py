@@ -138,7 +138,7 @@ el_match = re.search(r"(?:export\s+)?const el = \{([\s\S]*?)\n\s*\};", dom_conte
 check("const el DOM cache found in dom.js / index.html", bool(el_match))
 
 cached_ids = re.findall(r"document\.getElementById\(['\"]([^'\"]+)['\"]\)", dom_content)
-check(f"Exactly 169 element IDs cached in const el (found {len(cached_ids)})", len(cached_ids) == 169)
+check(f"Exactly 166 element IDs cached in const el (found {len(cached_ids)})", len(cached_ids) == 166)
 
 missing_ids = []
 for cid in cached_ids:
@@ -146,7 +146,7 @@ for cid in cached_ids:
     if not re.search(pattern, html_content):
         missing_ids.append(cid)
 
-check(f"All 169 cached element IDs exist in HTML markup (missing: {missing_ids})", len(missing_ids) == 0)
+check(f"All 166 cached element IDs exist in HTML markup (missing: {missing_ids})", len(missing_ids) == 0)
 
 # Check CSS classes
 required_css = [

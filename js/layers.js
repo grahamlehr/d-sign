@@ -2,7 +2,7 @@
    Layers Manager (List Rendering, Add, Reorder, Delete, Duplicate)
    ========================================================================== */
 
-import { state, pushHistorySnapshot, normalizeLayer, imageElementCache } from './state.js';
+import { state, pushHistorySnapshot, normalizeLayer, imageElementCache, selectLayer, deselectLayers } from './state.js';
 import { el, showToast } from './dom.js';
 import { syncActiveLayerControls } from './ui.js';
 import { updatePreview } from './canvas.js';
@@ -10,7 +10,8 @@ import { updatePreview } from './canvas.js';
 let draggedLayerId = null;
 
 export function getActiveLayer() {
-  return state.layers.find(l => l.id === state.activeLayerId) || state.layers[0];
+  if (!state.activeLayerId) return null;
+  return state.layers.find(l => l.id === state.activeLayerId) || null;
 }
 
 export function updateActiveLayerProp(key, value) {
@@ -38,13 +39,24 @@ export function renderLayersList() {
   const container = el.layersListContainer;
   container.innerHTML = '';
 
+  container.onclick = (e) => {
+    if (e.target === container) {
+      deselectLayers();
+      renderLayersList();
+      syncActiveLayerControls();
+      updatePreview();
+    }
+  };
+
   if (el.layersCountBadge) {
     el.layersCountBadge.textContent = `${state.layers.length} ${state.layers.length === 1 ? 'LAYER' : 'LAYERS'}`;
   }
 
   state.layers.forEach((layer, index) => {
+    const isAct = layer.id === state.activeLayerId;
+    const isSel = state.selectedLayerIds && state.selectedLayerIds.includes(layer.id);
     const card = document.createElement('div');
-    card.className = 'layer-card' + (layer.id === state.activeLayerId ? ' active' : '');
+    card.className = 'layer-card' + (isAct ? ' active' : (isSel ? ' multi-selected' : ''));
     card.dataset.id = layer.id;
     card.dataset.index = index;
     card.draggable = true;
@@ -141,8 +153,15 @@ export function renderLayersList() {
     card.appendChild(actions);
 
     // Selection Click
-    card.onclick = () => {
-      state.activeLayerId = layer.id;
+    card.onclick = (e) => {
+      const isMulti = e && (e.shiftKey || e.metaKey || e.ctrlKey);
+      if (isMulti) {
+        selectLayer(layer.id, true);
+      } else if (state.activeLayerId === layer.id && (!state.selectedLayerIds || state.selectedLayerIds.length <= 1)) {
+        deselectLayers();
+      } else {
+        selectLayer(layer.id, false);
+      }
       renderLayersList();
       syncActiveLayerControls();
       updatePreview();
