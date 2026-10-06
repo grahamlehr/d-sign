@@ -1,0 +1,412 @@
+/* ==========================================================================
+   Workspace Quick Actions Toolbar (Floating at Top of Viewport)
+   ========================================================================== */
+.canvas-quick-toolbar {
+  position: absolute;
+  top: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-surface);
+  border: 2px solid var(--color-divider);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  z-index: 50;
+  padding: 2px;
+}
+
+.toolbar-tool-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  padding: 6px 12px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-tool-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-accent);
+}
+
+.toolbar-tool-btn.active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--color-divider);
+  margin: 0 4px;
+}
+
+/* ==========================================================================
+   The Scaled Preview Frame & Canvas Stack
+   ========================================================================== */
+.preview-frame {
+  position: relative;
+  box-shadow: var(--shadow-lg), 0 0 0 2px var(--color-divider);
+  background-color: #0b0f19;
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+  overflow: hidden;
+}
+
+/* Checkerboard Grid Pattern */
+.checkerboard {
+  background-color: var(--checker-2) !important;
+  background-image: 
+    linear-gradient(45deg, var(--checker-1) 25%, transparent 25%), 
+    linear-gradient(-45deg, var(--checker-1) 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, var(--checker-1) 75%), 
+    linear-gradient(-45deg, transparent 75%, var(--checker-1) 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+}
+
+.preview-canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Background image element */
+.preview-bg-image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate(-50%, -50%) translate(calc(var(--bg-offset-x) * 1%), calc(var(--bg-offset-y) * 1%)) scale(var(--bg-zoom));
+  transform-origin: center center;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.preview-bg-image.loaded {
+  opacity: 1;
+}
+
+/* Tint overlay */
+.preview-tint {
+  position: absolute;
+  inset: 0;
+  background-color: var(--tint-color);
+  opacity: var(--tint-opacity);
+  pointer-events: none;
+}
+
+/* Snap Guides (Magnetic Center Crosshairs) */
+.snap-guide {
+  position: absolute;
+  pointer-events: none;
+  z-index: 40;
+  display: none;
+}
+.snap-guide-x {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  border-left: 2px dashed var(--color-accent);
+}
+.snap-guide-y {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  border-top: 2px dashed var(--color-accent);
+}
+
+/* Layers Container */
+.preview-text-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: all;
+}
+
+/* Draggable On-Canvas Layer Box */
+.preview-text-box {
+  position: absolute;
+  max-width: 85%;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.preview-text-box:hover {
+  outline: 1px dashed var(--color-accent);
+  outline-offset: 4px;
+}
+
+.preview-text-box.dragging {
+  cursor: grabbing !important;
+  opacity: 0.92;
+}
+
+/* Active Layer Frame (Modernist Selection Box) */
+.preview-text-box.active-layer {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.preview-text-box.has-handles {
+  outline-offset: 0px !important;
+  max-width: none;
+  white-space: normal;
+}
+
+/* Corner handles on active text layer (decorative) */
+.preview-text-box.active-layer:not(.has-handles)::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-accent);
+  border: 1px solid #fff;
+}
+
+.preview-text-box.active-layer:not(.has-handles)::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: -8px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-accent);
+  border: 1px solid #fff;
+}
+
+/* On-Canvas Corner Resize Handles */
+.resize-handle {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 0px;
+  position: absolute;
+  z-index: 50;
+  touch-action: none;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+.resize-handle:hover {
+  background: var(--color-accent);
+}
+.resize-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+.resize-ne {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+.resize-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+.resize-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+
+/* Rotation Stalk & Handle */
+.rotation-stalk {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  width: 1.5px;
+  height: 24px;
+  background: var(--color-accent);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 48;
+}
+.rotation-handle {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  z-index: 52;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  padding: 0;
+  box-sizing: border-box;
+  transition: transform 0.1s ease;
+  pointer-events: auto;
+}
+.rotation-handle:hover,
+.rotation-handle.rotating {
+  cursor: grabbing !important;
+  transform: translateX(-50%) scale(1.15);
+}
+.rotation-handle svg {
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+
+/* On-Canvas Coordinates Badge HUD */
+.coords-hud {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 45;
+  display: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.preview-text-box.has-handles .coords-hud {
+  top: auto;
+  bottom: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.preview-text-box.active-layer .coords-hud {
+  display: block;
+}
+
+/* ==========================================================================
+   Full Window Drag-and-Drop Ingestion Overlay
+   ========================================================================== */
+.global-drag-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: none;
+  place-items: center;
+  border: 6px dashed var(--color-accent);
+  pointer-events: none;
+}
+
+.global-drag-overlay.active {
+  display: grid;
+}
+
+.drag-overlay-card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-text);
+  padding: 32px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.drag-overlay-card h2 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.drag-overlay-card p {
+  font-size: 14px;
+  max-width: 40ch;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+
+/* ==========================================================================
+   Canvas User Guidelines (Horizontal & Vertical)
+   ========================================================================== */
+.canvas-guide {
+  position: absolute;
+  z-index: 42;
+  pointer-events: auto;
+  user-select: none;
+}
+.canvas-guide.guide-h {
+  left: 0;
+  right: 0;
+  height: 9px;
+  margin-top: -4px;
+  cursor: row-resize;
+  border-top: 1px dashed var(--color-accent);
+}
+.canvas-guide.guide-v {
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  margin-left: -4px;
+  cursor: col-resize;
+  border-left: 1px dashed var(--color-accent);
+}
+.canvas-guide:hover,
+.canvas-guide.dragging {
+  border-color: #ff4d36;
+  z-index: 44;
+}
+.canvas-guide .guide-label {
+  position: absolute;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.canvas-guide.guide-h .guide-label {
+  left: 6px;
+  top: 2px;
+}
+.canvas-guide.guide-v .guide-label {
+  top: 6px;
+  left: 2px;
+}
+.canvas-guide:hover .guide-label,
+.canvas-guide.dragging .guide-label {
+  opacity: 1;
+}
+
+/* Multi-Selected Layer State */
+.preview-text-box.multi-selected {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 2px;
+}

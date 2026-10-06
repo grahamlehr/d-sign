@@ -6,6 +6,57 @@ Rebuilt from the ground up implementing the **CueSmith Modernist Design Language
 
 ---
 
+## What's New in Version 2.2.0
+
+### 1. Multi-Layer Selection & Alignment Suite
+- **Multi-Selection**: Select two or more layers simultaneously via <kbd>Shift</kbd> + click or <kbd>Cmd / Ctrl</kbd> + click on canvas elements or layer cards.
+- **Precision Alignment Tools**: One-click alignment controls in the canvas quick-action toolbar:
+  - **Align Left**: Flushes selected layers to the leftmost boundary.
+  - **Align Center X**: Horizontally centers layers along the selection bounding midpoint.
+  - **Align Right**: Flushes selected layers to the rightmost boundary.
+  - **Align Top**: Aligns selected layers to the top boundary.
+  - **Align Middle Y**: Vertically centers layers along the selection bounding midpoint.
+  - **Align Bottom**: Aligns selected layers to the bottom boundary.
+- **Group Dragging**: Translates all multi-selected layers together while preserving relative spatial offsets.
+
+### 2. Precision Exact Numeric Inputs & Two-Way Sync
+- **Direct Keyboard Typing**: Type exact numerical values into dedicated inputs for Position ($X$, $Y$ in %), Image Scale ($10\text{–}500\%$), Rotation ($-180^\circ\text{–}180^\circ$), Font Size ($8\text{–}200\text{px}$), and Zoom ($10\text{–}500\%$).
+- **Bidirectional Synchronization**: Seamlessly updates underlying state, reactive sliders, HUD metric badges, and canvas rendering without jumpiness or precision loss.
+
+### 3. Proprietary `.dsign` Template Archive Format
+- **User-Proof Packaging**: Templates download as `.dsign` archives (e.g. `D-Sign-Template-landscape-[timestamp].dsign`), preventing operating systems or users from inadvertently decompressing and breaking template folder hierarchies.
+- **100% Backwards Compatible**: Ingests both `.dsign` and legacy `.zip` archives seamlessly via file picker or drag-and-drop.
+
+### 4. Canvas Guidelines & Magnetic Snapping (Non-Exported)
+- **Horizontal & Vertical Guides**: Place non-exported guidelines with live percentage metric badges (`H: 50.0%`, `V: 50.0%`).
+- **Interactive Dragging & Deletion**: Drag guidelines across the canvas, or drag past canvas borders to delete.
+- **Magnetic Snapping**: Canvas layers snap magnetically to active guidelines within a threshold during dragging.
+- **Clean Production Export**: Guidelines and metric badges are rendered as DOM overlays, ensuring exported production PNGs remain 100% clean.
+
+### 5. Canvas Zoom Beyond 100% (Up to 500%) & Workspace Panning
+- **Extended Zoom Range**: Scale preview zoom from $10\%$ up to $500\%$ via slider or direct numeric input.
+- **Workspace Panning**: Pan the expanded canvas viewport using <kbd>Space</kbd> + drag or middle-click for inspecting micro-typography and fine cutout alignments.
+
+### 6. Double-Click Inline Canvas Text Editing
+- **Direct Canvas Editing**: Double-click any text box directly on the preview canvas to activate an inline Modernist textarea editor.
+- **Live Sync & Blur Commitment**: Real-time canvas text synchronization; press <kbd>Escape</kbd> or click outside to commit changes.
+
+### 7. Multi-Master Designs (Artboards) & Batch Production Export
+- **Artboard Management Bar**: Modernist bottom tab bar (`#master-designs-bar`) to switch between master designs/pages within a single project.
+- **Add, Duplicate & Delete**: Add new blank master designs, duplicate existing designs with deep-cloned layers, and switch seamlessly with separate undo stacks.
+- **Batch Export to ZIP**: Export all master designs in a single click into a ZIP archive bundle containing full-resolution PNGs.
+
+### 8. Interactive App Walkthrough & Onboarding Tour
+- **9 Curated Tour Steps**: Introduces new users to screen presets, background graphics, master designs, polymorphic layers, precision numeric typing, direct manipulation, alignment tools, and production export.
+- **SVG Spotlight Cutout**: Dynamic backdrop mask focusing on target elements with Modernist step cards and keyboard navigation (<kbd>→</kbd>, <kbd>←</kbd>, <kbd>Esc</kbd>).
+- **On-Demand Access**: Automatically invites first-time visitors (`localStorage` flag) and remains accessible anytime via the **Walkthrough** button in the top navigation bar.
+
+### 9. High-Contrast Transparency Checkerboard & 32-Bit Transparent Canvas
+- **Enhanced Checkerboard Visibility**: High-contrast checkerboard pairs (`#dcdad8` / `#f2f1ef` Daylight; `#191817` / `#282624` Backstage) ensure transparency is immediately distinguishable.
+- **Transparent Canvas Mode**: Toggle transparent background mode for exporting 32-bit transparent digital signage overlays, lower-thirds, and broadcast bug graphics.
+
+---
+
 ## What's New in Version 2.1.0
 
 ### 1. First-Class Transparent PNG Image Layers
@@ -193,6 +244,12 @@ D-Sign-Template-[preset]-[timestamp].zip
 D-Sign includes comprehensive automated end-to-end verification suites covering 100% of capabilities:
 
 ```bash
+# Run v2.2 feature verification suite (multi-layer alignment, numeric inputs, .dsign, guides, zoom, multi-master)
+node tests/test_v22_features.js
+
+# Run Walkthrough & onboarding tour test suite
+node tests/test_walkthrough.js
+
 # Run Node.js headless end-to-end test suite (27 tests)
 node tests/test_png_layers_e2e.js
 
@@ -211,11 +268,51 @@ python3 tests/verify_features.py
 
 ---
 
+## Modular Architecture & GitHub Pages Deployment
+
+D-Sign is structured into clean, modular CSS stylesheets and native ES6 JavaScript modules with **zero build step**, making it directly hostable on **GitHub Pages**:
+
+```text
+D-Sign/
+├── index.html                 # Clean semantic HTML markup & layout
+├── css/
+│   ├── variables.css          # Design tokens, color ramps, typography, and theme modes
+│   ├── layout.css             # Navigation bar, workspace grid, and sidebar layout
+│   ├── components.css         # Buttons, inputs, forms, layer cards, dialogs, toasts
+│   ├── canvas.css             # Viewport, direct manipulation handles, HUD, and overlays
+│   └── styles.css             # Master stylesheet importing all CSS modules
+└── js/
+    ├── constants.js           # APP_VERSION, SCHEMA_VERSION, screen presets
+    ├── dom.js                 # Cached DOM element selectors and toast notifications
+    ├── state.js               # Reactive application state, layer normalization, undo/redo
+    ├── utils.js               # Color helpers, text wrapping, and binary format conversions
+    ├── layers.js              # Layers manager, addition, reordering, duplicate, deletion
+    ├── ui.js                  # Control synchronization and canvas dimension fitting
+    ├── canvas.js              # Live viewport DOM and high-speed layer renderer
+    ├── interactions.js        # On-canvas dragging, corner resizing, rotation, global drag-and-drop
+    ├── storage.js             # Project JSON save/load, Template ZIP package, PNG export
+    └── app.js                 # Application orchestration, keyboard shortcuts, and initialization
+```
+
+### GitHub Pages Hosting
+GitHub Pages serves standard static files and ES6 modules natively. No npm install, bundler, or build pipeline is required. Pushing to your GitHub Pages branch deploys immediately.
+
+### Running Locally
+Because modern browsers enforce standard CORS security on native ES modules (`<script type="module">`), serve the folder locally via any static web server:
+
+```bash
+# Using Python 3 built-in server:
+python3 -m http.server 8000
+
+# Or using npx:
+npx serve .
+```
+
+---
+
 ## Getting Started
 
-Because **D-Sign** is a standalone, client-only application, it requires no Node.js runtime or build step to run in production:
-
-1. Open `index.html` directly in any modern web browser (Chrome, Edge, Safari, Firefox).
+1. Open the application on GitHub Pages or serve locally.
 2. Load a background image or set the canvas solid color in section **02 Background Image & Canvas**.
 3. Add text layers or click **+ Image Layer** in section **03 Layers Manager** to composite transparent PNG graphics.
 4. Drag layers directly on the preview canvas to position them, drag corner handles to resize, and drag the rotation stalk to orient them.

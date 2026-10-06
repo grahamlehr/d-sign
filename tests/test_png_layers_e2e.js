@@ -386,17 +386,31 @@ function createBrowserSandbox() {
       offsetHeight: 450,
       clientWidth: 1200,
       clientHeight: 800,
-      options: []
+      options: [],
+      attributes: {},
+      setAttribute: function(name, val) { this.attributes[name] = String(val); },
+      getAttribute: function(name) { return this.attributes[name] || null; }
     };
   }
 
+  const docListeners = {};
   const mockDoc = {
     getElementById: (id) => createMockElement('div', id),
     createElement: (tag) => createMockElement(tag),
     querySelector: () => createMockElement('div'),
     querySelectorAll: () => [],
     fonts: { add: () => {}, has: () => false },
-    body: createMockElement('body')
+    body: createMockElement('body'),
+    documentElement: createMockElement('html'),
+    addEventListener: (evt, cb) => {
+      docListeners[evt] = docListeners[evt] || [];
+      docListeners[evt].push(cb);
+    },
+    removeEventListener: (evt, cb) => {
+      if (docListeners[evt]) {
+        docListeners[evt] = docListeners[evt].filter(f => f !== cb);
+      }
+    }
   };
 
   class MockImage {
@@ -442,7 +456,7 @@ function createBrowserSandbox() {
   const context = {
     window: null,
     document: mockDoc,
-    localStorage: { getItem: () => null, setItem: () => {} },
+    localStorage: { getItem: () => 'true', setItem: () => {} },
     navigator: { userAgent: 'D-Sign-Headless-Test/2.1.0' },
     location: { href: 'http://localhost/' },
     URL: {
@@ -483,7 +497,31 @@ function createBrowserSandbox() {
   const htmlPath = path.join(__dirname, '..', 'index.html');
   const html = fs.readFileSync(htmlPath, 'utf-8');
   const scriptMatches = [...html.matchAll(/<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/gi)];
-  vm.runInContext(scriptMatches[0][1], context);
+  if (scriptMatches.length > 0) {
+    vm.runInContext(scriptMatches[0][1], context);
+  } else {
+    // Modular architecture: load and run all modules in dependency order
+    const jsDir = path.join(__dirname, '..', 'js');
+    const modules = [
+      'constants.js',
+      'dom.js',
+      'utils.js',
+      'state.js',
+      'layers.js',
+      'ui.js',
+      'canvas.js',
+      'interactions.js',
+      'storage.js',
+      'walkthrough.js',
+      'app.js'
+    ];
+    for (const mod of modules) {
+      let code = fs.readFileSync(path.join(jsDir, mod), 'utf-8');
+      code = code.replace(/^\s*import\s+[^;]+;?/gm, '');
+      code = code.replace(/^\s*export\s+(?:default\s+)?/gm, '');
+      vm.runInContext(code, context);
+    }
+  }
 
   return { context, html };
 }
@@ -574,18 +612,21 @@ async function runAllTests() {
 
   const { context, html } = createBrowserSandbox();
 
-  it('Should verify that all 146 cached element IDs in "const el" exist in index.html markup', () => {
-    const elMatch = html.match(/const el = \{([\s\S]*?)\n    \};/);
-    assert.ok(elMatch, 'const el cache declaration found');
-    const elBlock = elMatch[1];
+  it('Should verify that all 169 cached element IDs in "const el" exist in index.html markup', () => {
+    let searchTarget = html;
+    const elMatch = html.match(/const el = \{([\s\S]*?)\n\s*\};/);
+    if (!elMatch) {
+      const domPath = path.join(__dirname, '..', 'js', 'dom.js');
+      searchTarget = fs.readFileSync(domPath, 'utf-8');
+    }
     const idRegex = /document\.getElementById\(['"]([^'"]+)['"]\)/g;
     const ids = [];
     let m;
-    while ((m = idRegex.exec(elBlock)) !== null) {
+    while ((m = idRegex.exec(searchTarget)) !== null) {
       ids.push(m[1]);
     }
 
-    assert.strictEqual(ids.length, 146, `Expected 146 cached IDs, found ${ids.length}`);
+    assert.strictEqual(ids.length, 169, `Expected 169 cached IDs, found ${ids.length}`);
     const missing = [];
     for (const id of ids) {
       const p = new RegExp(`id=['"]${id}['"]`);
@@ -596,10 +637,19 @@ async function runAllTests() {
     assert.deepStrictEqual(missing, [], 'All cached IDs must exist in index.html');
   });
 
-  it('Should verify that direct manipulation CSS classes exist in <style>', () => {
+  it('Should verify that direct manipulation CSS classes exist in stylesheet', () => {
+    let css = '';
     const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
-    assert.ok(styleMatch, '<style> block found');
-    const css = styleMatch[1];
+    if (styleMatch) {
+      css = styleMatch[1];
+    } else {
+      const cssDir = path.join(__dirname, '..', 'css');
+      for (const f of fs.readdirSync(cssDir)) {
+        if (f.endsWith('.css')) {
+          css += fs.readFileSync(path.join(cssDir, f), 'utf-8') + '\n';
+        }
+      }
+    }
 
     const requiredClasses = [
       '.resize-handle',

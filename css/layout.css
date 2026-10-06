@@ -1,0 +1,197 @@
+/* ==========================================================================
+   Header Navigation Bar
+   ========================================================================== */
+.nav {
+  height: 56px;
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-divider);
+  padding: 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.nav-brand-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.nav-logo-badge {
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+
+.nav-brand-title {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-version-tag {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-700);
+  border: 1px solid var(--color-divider);
+  padding: 1px 6px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
+   Main Workspace Layout
+   ========================================================================== */
+.main-workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+}
+
+/* Sidebar Panel */
+.sidebar {
+  background: var(--color-bg);
+  border-right: 2px solid var(--color-divider);
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Viewport & Preview Pane Area */
+.preview-pane {
+  background: var(--viewport-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Viewport Status & Scale Bar (Bottom Right) */
+.viewport-status-bar {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-sm);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 50;
+}
+
+.viewport-status-bar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoom-group input[type="range"] {
+  width: 80px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Master Designs Bar (Artboards / Multi-Page Slider)
+   ========================================================================== */
+.master-designs-bar {
+  position: absolute;
+  bottom: var(--space-4);
+  left: var(--space-4);
+  max-width: calc(100% - 370px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-sm);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.master-designs-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.master-designs-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.design-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  border-radius: 0 !important;
+}
+
+.design-tab:hover {
+  border-color: var(--color-text);
+}
+
+.design-tab.active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.master-designs-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}

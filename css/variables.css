@@ -1,0 +1,179 @@
+/* ==========================================================================
+   CueSmith Modernist Design Language Tokens
+   Derived from modernist-bed50b9e-5ffe-4902-ba30-c76a0fbf2b94
+   Flat, architectural, set in Archivo, near-mono red on ground,
+   strict 0px border radius, 2px dividing rules, tabular metrics.
+   ========================================================================== */
+
+:root {
+  /* Daylight (Default) */
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-surface-card: #f8f7f7;
+  --color-surface-hover: #dfdede;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-accent-2: #e15b47;
+  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+  --color-divider-subtle: color-mix(in srgb, #201e1d 15%, transparent);
+
+  /* Tonal Ramps (OKLCH lightness matched) */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+
+  /* Strict Zero Radius */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Fonts */
+  --font-heading: "Archivo", system-ui, sans-serif;
+  --font-heading-weight: 800;
+  --font-body: "Archivo", system-ui, sans-serif;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+
+  /* Workspace Specifics */
+  --checker-1: #dcdad8;
+  --checker-2: #f2f1ef;
+  --viewport-bg: #e3e2e1;
+}
+
+/* Backstage Dark Theme Mode */
+[data-theme="backstage"] {
+  --color-bg: #161514;
+  --color-surface: #22201e;
+  --color-surface-card: #282624;
+  --color-surface-hover: #2e2b29;
+  --color-text: #f3f2f2;
+  --color-accent: #ec3013;
+  --color-accent-2: #e15b47;
+  --color-divider: color-mix(in srgb, #f3f2f2 35%, transparent);
+  --color-divider-subtle: color-mix(in srgb, #f3f2f2 15%, transparent);
+
+  --color-neutral-100: #22201e;
+  --color-neutral-200: #2d2a28;
+  --color-neutral-300: #444141;
+  --color-neutral-400: #605d5d;
+  --color-neutral-500: #7d7979;
+  --color-neutral-600: #bab6b6;
+  --color-neutral-700: #d7d3d3;
+  --color-neutral-800: #eae7e7;
+  --color-neutral-900: #f8f4f4;
+
+  --color-accent-100: #3a1a12;
+  --color-accent-200: #591b10;
+  --color-accent-300: #7c1405;
+  --color-accent-400: #ae1800;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.8);
+
+  --checker-1: #191817;
+  --checker-2: #282624;
+  --viewport-bg: #0f0e0d;
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important; /* Strict Modernist 0px radius enforcement */
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* Tabular Numbers */
+.tn {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Photography Grayscale Filter */
+.grayscale {
+  filter: grayscale(1) contrast(1.08) !important;
+}
+
+/* Dividers */
+.hr {
+  height: 2px;
+  border: 0;
+  background: var(--color-divider);
+  margin: var(--space-4) 0;
+}
+
+.hr-subtle {
+  height: 1px;
+  border: 0;
+  background: var(--color-divider-subtle);
+  margin: var(--space-3) 0;
+}
+
+/* Focus States */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 2px !important;
+}
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color: inherit;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-left: 1px solid var(--color-divider-subtle);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-400);
+  border: 1px solid var(--color-bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
